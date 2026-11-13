@@ -19,7 +19,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{background:var(--deep);color:var(--text);font-family:Nunito,"Segoe UI",system-ui,sans-serif;font-weight:600}
-button,input,select{font:inherit;color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
 
 /* ================= STAGE (Beamer + Vorschau) ================= */
 .stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;color:#fff;
@@ -149,6 +149,20 @@ button,input,select{font:inherit;color:inherit}
   background:rgba(40,20,110,.7);border:3px solid rgba(143,250,255,.7);box-shadow:0 0 12px rgba(63,240,255,.5)}
 .l-champ .trophy{font-size:120px;position:absolute;top:80px;animation:bob 1.4s ease-in-out infinite alternate}
 
+/* --- Fragen --- */
+.l-q .hdr,.l-ans .hdr{top:34px}
+.qwrap{position:absolute;left:110px;right:110px;top:130px;bottom:55px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px}
+.qwrap.nom{gap:60px}
+.qt{flex:none;max-width:1700px;text-align:center;font-family:Montserrat,sans-serif;font-weight:800;line-height:1.12;white-space:pre-line;word-break:break-word;animation:pop .8s cubic-bezier(.2,1.4,.4,1) both}
+.qm{flex:1 1 0;min-height:0;width:100%;position:relative;display:flex;align-items:center;justify-content:center;animation:pop .8s .15s cubic-bezier(.2,1.3,.4,1) both}
+.qm img,.qm video{box-sizing:border-box;max-width:100%;max-height:100%;border-radius:18px;border:6px solid #8ffaff;background:#000;
+  box-shadow:0 0 14px #3ff0ff,0 0 44px rgba(25,217,255,.55)}
+.qa{flex:none;display:flex;align-items:center;gap:28px;padding:20px 50px;border-radius:22px;border:6px solid #ffe27a;max-width:1700px;
+  background:rgba(70,40,10,.45);box-shadow:0 0 16px #ffd23f,0 0 40px rgba(255,176,0,.45),inset 0 0 24px rgba(255,210,63,.3);opacity:0;transform:scale(.6)}
+.qa.shown{opacity:1;transform:none;transition:opacity .4s,transform .7s cubic-bezier(.2,1.6,.4,1)}
+.qa .lbl{font:900 30px Montserrat,sans-serif;letter-spacing:4px;color:#ffd23f;text-transform:uppercase;white-space:nowrap}
+.qa .av{font-family:Montserrat,sans-serif;font-weight:900;color:#fff;text-shadow:0 0 8px #fff1a0,0 0 26px #ffb300;word-break:break-word}
+
 /* --- Timer (Overlay) --- */
 .stage .layers{transition:filter .5s}
 .stage.tbig .layers{filter:blur(6px) brightness(.4)}
@@ -197,6 +211,27 @@ body.beamer.nocursor{cursor:none}
 .dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;padding:20px;align-items:start}
 @media (max-width:1150px){.layout{grid-template-columns:1fr}}
+.qitem{display:grid;grid-template-columns:34px minmax(0,1fr) 190px auto;gap:10px;align-items:start;padding:10px;border-radius:12px;
+  background:rgba(0,0,0,.18);margin-bottom:10px;border:2px solid rgba(143,250,255,.12)}
+.qitem.cur{border-color:var(--pink);box-shadow:0 0 12px rgba(255,47,208,.35)}
+.qnum{font:900 20px Montserrat,sans-serif;color:var(--cyan2);text-align:center;padding-top:8px}
+.qbody{display:flex;flex-direction:column;gap:6px;min-width:0}
+textarea.inp{resize:vertical;min-height:56px;font-size:16px;line-height:1.3}
+.qrow{display:flex;gap:6px}
+.qrow .qtim{width:130px;flex:none;text-align:center}
+.qmedia{height:118px;border:2px dashed rgba(143,250,255,.35);border-radius:10px;display:grid;place-items:center;text-align:center;font-size:13px;
+  color:var(--muted);cursor:pointer;position:relative;overflow:hidden;background:#140d4a;padding:4px}
+.qmedia.drag{border-color:var(--pink);background:#2b1150}
+.qmedia.has{border-style:solid;padding:0}
+.qmedia img,.qmedia video{width:100%;height:100%;object-fit:contain;display:block}
+.qmedia .mx{position:absolute;top:4px;right:4px;border:0;border-radius:6px;background:rgba(0,0,0,.7);cursor:pointer;padding:2px 8px}
+.qmedia .mt{position:absolute;left:4px;bottom:4px;right:4px;font-size:11px;background:rgba(0,0,0,.65);padding:1px 5px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.qacts{display:flex;flex-direction:column;gap:4px}
+.qacts button{border:0;background:#2d2190;border-radius:7px;padding:5px 9px;cursor:pointer}
+.qacts button.show{background:linear-gradient(180deg,#25c6dc,#1479a8)}
+.qacts button.del:hover{background:#7a1838}
+@media (max-width:900px){.qitem{grid-template-columns:30px minmax(0,1fr)}.qmedia,.qacts{grid-column:2}.qacts{flex-direction:row}}
+.quick{grid-template-columns:1fr 1fr}
 .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .tabs button{border:0;background:var(--panel);padding:10px 20px;border-radius:12px 12px 0 0;cursor:pointer;font-weight:800;color:var(--muted);border-bottom:3px solid transparent}
 .tabs button.on{background:var(--panel2);color:#fff;border-bottom-color:var(--cyan)}
@@ -295,6 +330,7 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
       <nav class="tabs">
         <button data-tab="teams" class="on">👥 Teams</button>
         <button data-tab="scores">🔢 Punkte</button>
+        <button data-tab="questions">❓ Fragen</button>
         <button data-tab="settings">⚙️ Einstellungen</button>
       </nav>
 
@@ -326,6 +362,24 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
       </section>
 
       <!-- EINSTELLUNGEN -->
+      <section id="tab-questions" class="hidden">
+        <div class="card-ui">
+          <h2>Fragen</h2>
+          <div class="toolbar">
+            <select class="inp" id="qRoundSel" style="max-width:280px"></select>
+            <button class="btn cyan" id="addQ">＋ Frage hinzufügen</button>
+            <span class="muted" id="qCount"></span>
+          </div>
+          <div id="qList"></div>
+          <input type="file" id="qFile" accept="image/*,video/*" hidden>
+          <label class="chk"><input type="checkbox" id="vidAuto"> Videos beim Anzeigen automatisch abspielen</label>
+          <div class="hint">Pro Frage: Text (Zeilenumbrüche erlaubt, Emojis wie 🇦🇹 funktionieren), Bild oder Video (Klick oder Drag &amp; Drop), Lösung für die Auflösung
+            und optional eine eigene Timer-Dauer. Mit ▶ zeigst du eine Frage sofort auf dem Beamer.<br>
+            Ablauf: <b>🎬 Rundentitel</b> → Weiter → Fragen → „Antwortzettel abgeben“. Danach <b>✅ Auflösung</b>: pro Frage zuerst die Frage, mit dem nächsten Klick die Lösung.<br>
+            Bilder und Videos werden im Browser gespeichert. Sie sind nicht im JSON-Backup enthalten.</div>
+        </div>
+      </section>
+
       <section id="tab-settings" class="hidden">
         <div class="card-ui">
           <h2>Spiel</h2>
@@ -406,9 +460,14 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
         <div class="quick">
           <select class="inp" id="roundSel"></select>
           <button class="btn cyan" id="qRound">🎬 Rundentitel</button>
+          <button class="btn cyan" id="qQuest">❓ Fragen</button>
+          <button class="btn" id="qAns" style="background:linear-gradient(180deg,#3fd38a,#178a55)">✅ Auflösung</button>
           <button class="btn yellow" id="qStand">📊 Wertung</button>
           <button class="btn" id="qStart">🏠 Startbild</button>
           <button class="btn" id="qStop">⏹ Musik stoppen</button>
+        </div>
+        <div class="tq hidden" id="vidCtl">
+          <button class="btn" data-vc="play">▶ Video</button><button class="btn" data-vc="pause">⏸ Pause</button><button class="btn" data-vc="restart">⟲ Neustart</button>
         </div>
         <div class="warnline" id="audioWarn"></div>
       </div>
@@ -432,6 +491,7 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
         </div>
         <label class="chk"><input type="checkbox" id="tBeep"> Signalton bei Ablauf</label>
         <label class="chk"><input type="checkbox" id="tTick"> Ticken in den letzten 5 Sekunden</label>
+        <label class="chk"><input type="checkbox" id="tAuto"> Bei jeder neuen Frage automatisch starten</label>
         <div class="hint">Dauer als Sekunden (<code>45</code>) oder Minuten:Sekunden (<code>1:30</code>). „Start“ beginnt immer von vorne, also einfach bei jeder Frage drücken. Taste <span class="kbd">T</span> = Start / Pause, auch im Beamer-Fenster.</div>
       </div>
     </aside>
@@ -471,13 +531,14 @@ function initStage(host){
    <div class="tmr"><svg viewBox="0 0 200 200"><circle class="bgc" cx="100" cy="100" r="96"/><circle class="trk" cx="100" cy="100" r="88"/><circle class="arc" cx="100" cy="100" r="88"/></svg>
    <div class="tv">0:00</div><div class="tz">ZEIT!</div></div>`;
   host.appendChild(st);
-  const o={host,st,layers:st.querySelector('.layers'),key:null,json:null,layer:null};
+  const o={host,st,layers:st.querySelector('.layers'),key:null,json:null,layer:null,preview:host.id==='previewHost'};
   const fit=()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;const s=Math.min(w/W,h/H);
     st.style.transform=`translate(${(w-W*s)/2}px,${(h-H*s)/2}px) scale(${s})`;};
   try{new ResizeObserver(fit).observe(host)}catch(e){window.addEventListener('resize',fit)}
   fit();host._st=o;return o;
 }
 function subOf(vm){
+  if(vm.screen==='ans'&&vm.title)return 'anstitle';
   if(vm.screen!=='standings')return vm.screen;
   const s=vm.steps[vm.step]||{t:'title'};
   if(s.t==='champion')return vm.suspense?'top':'champ';
@@ -487,7 +548,8 @@ function renderStage(host,vm){
   const o=host._st||initStage(host);
   const json=JSON.stringify(vm);if(json===o.json)return;o.json=json;
   const sub=subOf(vm);
-  o.st.classList.toggle('list',['rest','top','table','champ'].includes(sub));
+  o.st.classList.toggle('list',['rest','top','table','champ','q','ans'].includes(sub));
+  o.vid=vm.vid||null;
   o.st.querySelector('.site').textContent=vm.site||'';
   const key=vm.key+'|'+sub;
   if(key!==o.key){
@@ -495,11 +557,42 @@ function renderStage(host,vm){
     const el=buildLayer(vm,sub);
     const old=o.layer;
     if(old){old.classList.add('out');old._stop&&old._stop();setTimeout(()=>old.remove(),550)}
-    o.layers.appendChild(el);o.layer=el;
+    o.layers.appendChild(el);o.layer=el;fillMedia(el,o);
     if(sub==='champ')el._stop=confetti(el.querySelector('canvas'));
   }
   if(sub==='top')applyReveal(o.layer,vm);
+  if(sub==='ans'){const a=o.layer.querySelector('.qa');if(a)a.classList.toggle('shown',!!vm.revealed)}
+  applyVid(o);
   updateTimerView(o,vm.timer);
+}
+/* ---------- Medien (Bilder/Videos) ---------- */
+const MEDIA={};// id -> {url,type,blob}
+function fitMedia(el){const box=el.parentElement;if(!box)return;const bw=box.clientWidth,bh=box.clientHeight;
+  const nw=el.naturalWidth||el.videoWidth,nh=el.naturalHeight||el.videoHeight;if(!nw||!nh||!bw||!bh)return;
+  const k=Math.min(bw/nw,bh/nh);el.style.width=Math.floor(nw*k)+'px';el.style.height=Math.floor(nh*k)+'px';el.style.maxWidth='none';el.style.maxHeight='none'}
+function fillMedia(root,o){
+  $$('.qm [data-mid]',root).forEach(el=>{
+    if(el.getAttribute('src'))return;const m=MEDIA[el.dataset.mid];
+    if(!m){if(typeof ensureMedia==='function'&&!IS_BEAMER)ensureMedia(el.dataset.mid);return}
+    if(el.tagName==='VIDEO'){el.muted=!!o.preview;el.addEventListener('loadedmetadata',()=>fitMedia(el));el.src=m.url;applyVid(o)}
+    else{el.addEventListener('load',()=>fitMedia(el));el.src=m.url}});
+}
+function applyVid(o){
+  const v=o.layer&&o.layer.querySelector('.qm video');if(!v||!o.vid||!v.getAttribute('src')||v._n===o.vid.n)return;
+  v._n=o.vid.n;const c=o.vid.cmd;
+  if(c==='pause'){v.pause();return}
+  if(c==='restart'){try{v.currentTime=0}catch(e){}}
+  const pr=v.play();if(pr)pr.catch(()=>{if(!o.preview){v.muted=true;v.play().catch(()=>{});o.onMuted&&o.onMuted()}});
+}
+function qLayerHTML(vm,isAns){
+  const t=(vm.text||'').trim(),hasM=!!vm.media,len=glen(t);
+  const fs=hasM?(len<45?84:len<90?68:len<160?54:44):(len<40?128:len<80?104:len<150?84:len<260?66:52);
+  const txt=t||(hasM?'':`Frage ${vm.qn}`);
+  let h=`<div class="hdr"><div class="k n-pink">${esc(vm.kicker)}</div></div><div class="qwrap ${hasM?'hasm':'nom'}">`;
+  if(txt)h+=`<div class="qt n-white" style="font-size:${fs}px">${esc(txt)}</div>`;
+  if(hasM)h+=`<div class="qm">${vm.media.type==='video'?`<video data-mid="${esc(vm.media.id)}" playsinline preload="auto"></video>`:`<img data-mid="${esc(vm.media.id)}" alt="">`}</div>`;
+  if(isAns){const a=(vm.answer||'').trim()||'–';h+=`<div class="qa"><span class="lbl">Lösung</span><span class="av" style="font-size:${fitFont(a,72,26,.5)}px">${esc(a)}</span></div>`}
+  return h+'</div>';
 }
 /* ---------- Timer-Anzeige ---------- */
 const TC=552.92;
@@ -533,6 +626,11 @@ function rowsBlock(list,showLast){
 }
 function buildLayer(vm,sub){
   const el=document.createElement('div');el.className='layer l-'+sub;
+  if(sub==='q'||sub==='ans'){el.innerHTML=qLayerHTML(vm,sub==='ans');return el}
+  if(sub==='qend'){el.classList.add('l-center');
+    el.innerHTML=`<div class="kick n-pink pop">Ende von ${esc(vm.name)}</div><div class="bigbox n-box pop2"><div class="txt n-white" style="font-size:110px">Antwortzettel<br>abgeben! <span class="emo">✍️</span></div></div>`;return el}
+  if(sub==='anstitle'){el.classList.add('l-center');
+    el.innerHTML=`<div class="main n-yellow pop" style="font:900 190px/1 Montserrat,sans-serif">AUFLÖSUNG</div><div class="subbox n-box pop2" style="padding:30px 70px;font:700 80px Montserrat,sans-serif">${esc(vm.name)}</div>`;return el}
   if(sub==='start'){
     el.innerHTML=`<svg class="hex" viewBox="0 0 1040 700">
        <g class="c">
@@ -612,9 +710,12 @@ if(IS_BEAMER){
   document.title='WIR Pub Quiz – Beamer';
   const host=$('#beamerHost');initStage(host);
   let got=false;
-  window.addEventListener('message',e=>{const d=e.data;if(d&&d.app==='pubquiz'&&d.type==='vm'){got=true;renderStage(host,d.vm)}});
+  window.addEventListener('message',e=>{const d=e.data;if(!d||d.app!=='pubquiz')return;
+    if(d.type==='media'){if(!MEDIA[d.id])MEDIA[d.id]={url:URL.createObjectURL(d.blob),type:d.mtype};const o=host._st;if(o&&o.layer)fillMedia(o.layer,o)}
+    if(d.type==='vm'){got=true;renderStage(host,d.vm)}});
   const send=msg=>{try{if(window.opener&&!window.opener.closed)window.opener.postMessage(Object.assign({app:'pubquiz'},msg),'*')}catch(e){}};
-  send({type:'hello'});setInterval(()=>send({type:'hello'}),1500);
+  host._st.onMuted=()=>send({type:'vidmuted'});
+  send({type:'hello',first:true});setInterval(()=>send({type:'hello'}),1500);
   setTimeout(()=>{if(!got)$('#beamerHint').innerHTML='Keine Verbindung zur Moderation. Bitte dieses Fenster schließen und in der Moderationsansicht auf <b>„Beamer-Fenster öffnen“</b> klicken.'},4000);
   const fs=()=>{try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen()}catch(e){}};
   document.addEventListener('dblclick',fs);
@@ -632,7 +733,7 @@ if(IS_BEAMER){
 
 /* ======================= MODERATOR ======================= */
 const EMOJIS=['🦊','🐙','🦄','🐸','🐼','🦁','🐧','🐝','🦉','🐢','🦖','🐳','🦩','🐨','🐯','🐞','🦜','🐬','🦔','🐮','🍕','🚀','🎸','⚡','🌵','🍩','🎩','🔥'];
-function defaultSettings(){return{numRounds:4,title1:'PUB',title2:'QUIZ',line1:'SA, 14. NOVEMBER',line2:'GEMEINDESAAL EICHGRABEN',site:'www.wir-fuer-eichgraben.at',drumDelay:3,drumUntilEnd:false,champStart:0,timerBeep:true,timerTick:true,timerBig:false}}
+function defaultSettings(){return{numRounds:4,title1:'PUB',title2:'QUIZ',line1:'SA, 14. NOVEMBER',line2:'GEMEINDESAAL EICHGRABEN',site:'www.wir-fuer-eichgraben.at',drumDelay:3,drumUntilEnd:false,champStart:0,timerBeep:true,timerTick:true,timerBig:false,qAutoTimer:false,videoAuto:true}}
 function defaultState(){return{v:1,teams:[],rounds:[],settings:defaultSettings(),pres:{screen:'start'},tbOrder:{},tbSig:null,timer:defaultTimer()}}
 function defaultTimer(){return{dur:60,state:'idle',endAt:0,rem:60000,show:false}}
 function normalize(s){
@@ -640,7 +741,7 @@ function normalize(s){
   s.settings=Object.assign(defaultSettings(),s.settings||{});
   s.settings.numRounds=Math.max(1,Math.min(30,parseInt(s.settings.numRounds)||4));
   s.teams=(Array.isArray(s.teams)?s.teams:[]).filter(t=>t&&typeof t==='object').map(t=>({id:String(t.id||newId()),name:String(t.name??''),emoji:String(t.emoji??'')}));
-  s.rounds=(Array.isArray(s.rounds)?s.rounds:[]).map((r,i)=>({name:String(r?.name??`Runde ${i+1}`),scores:(r&&typeof r.scores==='object'&&r.scores)||{}}));
+  s.rounds=(Array.isArray(s.rounds)?s.rounds:[]).map((r,i)=>({name:String(r?.name??`Runde ${i+1}`),scores:(r&&typeof r.scores==='object'&&r.scores)||{},questions:normQuestions(r&&r.questions)}));
   s.timer=Object.assign(defaultTimer(),s.timer||{});s.timer.dur=Math.max(1,Math.min(5999,parseInt(s.timer.dur)||60));
   if(s.timer.state==='running'&&s.timer.endAt<=Date.now()){s.timer.state='done';s.timer.rem=0}
   s.tbOrder=s.tbOrder||{};s.pres=s.pres||{screen:'start'};s.pres.suspense=false;
@@ -648,9 +749,12 @@ function normalize(s){
   if(s.pres.round!=null&&s.pres.round>=s.settings.numRounds)s.pres={screen:'start'};
   return s;
 }
+function normQuestions(a){return(Array.isArray(a)?a:[]).filter(q=>q&&typeof q==='object').map(q=>({id:String(q.id||newId()),text:String(q.text??''),answer:String(q.answer??''),
+  media:q.media&&q.media.id?{id:String(q.media.id),type:q.media.type==='video'?'video':'image',name:String(q.media.name||'')}:null,
+  timer:Number.isFinite(+q.timer)&&+q.timer>0?Math.min(5999,Math.round(+q.timer)):null}))}
 function ensureRounds(s){
   const n=s.settings.numRounds;
-  while(s.rounds.length<n)s.rounds.push({name:`Runde ${s.rounds.length+1}`,scores:{}});
+  while(s.rounds.length<n)s.rounds.push({name:`Runde ${s.rounds.length+1}`,scores:{},questions:[]});
   if(s.rounds.length>n)s.rounds.length=n;
 }
 function newId(){return 't'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
@@ -705,6 +809,17 @@ function standingsData(r,final){
 }
 function buildVM(){
   const st=S.settings,p=S.pres,base={site:st.site,timer:{...S.timer,big:!!st.timerBig}};
+  if(p.screen==='q'&&p.round<st.numRounds){const list=qs(p.round),n=list.length;
+    if(p.idx>=n)return{...base,screen:'qend',key:'qend|'+p.round+'|'+roundName(p.round),name:roundName(p.round)};
+    const q=list[p.idx];
+    return{...base,screen:'q',key:'q|'+q.id+'|'+hashStr(q.text+'|'+(q.media?q.media.id:'')),qn:p.idx+1,
+      kicker:`${roundName(p.round)} · Frage ${p.idx+1} / ${n}`,text:q.text,media:q.media?{id:q.media.id,type:q.media.type}:null,vid:p.vid||null}}
+  if(p.screen==='ans'&&p.round<st.numRounds){const list=qs(p.round);
+    if(!p.step||!list.length)return{...base,screen:'ans',title:true,key:'anst|'+p.round+'|'+roundName(p.round),name:roundName(p.round)};
+    const qi=Math.min(list.length-1,Math.floor((p.step-1)/2)),q=list[qi];
+    return{...base,screen:'ans',key:'ans|'+q.id+'|'+hashStr(q.text+'|'+q.answer+'|'+(q.media?q.media.id:'')),qn:qi+1,
+      kicker:`Auflösung · ${roundName(p.round)} · Frage ${qi+1} / ${list.length}`,text:q.text,answer:q.answer,
+      media:q.media?{id:q.media.id,type:q.media.type}:null,revealed:(p.step-1)%2===1,vid:p.vid||null}}
   if(p.screen==='round'&&p.round<st.numRounds){const i=p.round;
     return{...base,screen:'round',key:'round|'+i+'|'+roundName(i)+'|'+st.numRounds,idx:i,n:st.numRounds,name:roundName(i)}}
   if(p.screen==='standings'&&p.round<st.numRounds){const d=standingsData(p.round,p.final);
@@ -715,7 +830,25 @@ function buildVM(){
 
 /* ---------- Beamer-Verbindung ---------- */
 let beamerWin=null,lastHello=0,curVM=null;
-function postVM(){if(beamerWin&&!beamerWin.closed){try{beamerWin.postMessage({app:'pubquiz',type:'vm',vm:curVM},'*')}catch(e){}}}
+const sentMedia=new Set();
+function mediaNeeded(){const ids=[];if(!curVM)return ids;if(curVM.media)ids.push(curVM.media.id);
+  const p=S.pres;let nq=null;
+  if(p.screen==='q')nq=qs(p.round)[p.idx+1];
+  if(p.screen==='round')nq=qs(p.round)[0];
+  if(p.screen==='ans'){const list=qs(p.round);nq=list[p.step?Math.floor((p.step-1)/2)+1:0]}
+  if(nq&&nq.media)ids.push(nq.media.id);return ids}
+function postVM(){if(!(beamerWin&&!beamerWin.closed)||!curVM)return;
+  try{for(const id of mediaNeeded()){const m=MEDIA[id];if(!m){ensureMedia(id);continue}
+      if(!sentMedia.has(id)){beamerWin.postMessage({app:'pubquiz',type:'media',id,mtype:m.type,blob:m.blob},'*');sentMedia.add(id)}}
+    beamerWin.postMessage({app:'pubquiz',type:'vm',vm:curVM},'*')}catch(e){}}
+const loadingMedia=new Set();
+async function ensureMedia(id){if(!id||MEDIA[id]||loadingMedia.has(id))return;loadingMedia.add(id);
+  try{const v=await idbDo('readonly',st=>st.get('m_'+id));
+    if(v&&v.blob){MEDIA[id]={blob:v.blob,url:URL.createObjectURL(v.blob),type:v.type||(String(v.blob.type).startsWith('video')?'video':'image')};
+      const o=$('#previewHost')._st;if(o&&o.layer)fillMedia(o.layer,o);fillThumbs();postVM()}
+    else MEDIA_MISSING.add(id)}catch(e){MEDIA_MISSING.add(id)}
+  loadingMedia.delete(id);if(MEDIA_MISSING.has(id))fillThumbs()}
+const MEDIA_MISSING=new Set();
 function sync(){
   if(IS_BEAMER)return;
   curVM=buildVM();
@@ -746,8 +879,33 @@ function renderAudioUI(){
 let susp={timer:null,token:0};
 function cancelSuspense(){clearTimeout(susp.timer);susp.token++;AUD.drum.el.onended=null;if(S.pres.suspense){S.pres.suspense=false;fadeOut(AUD.drum.el,150)}}
 function curSteps(){return S.pres.screen==='standings'?standingsData(S.pres.round,S.pres.final).steps:[]}
+const qs=r=>(S.rounds[r]&&S.rounds[r].questions)||[];
+function vidCmd(cmd){S.pres.vid={cmd,n:Date.now()+Math.random()}}
+function onQuestionEnter(q){
+  if(q&&q.timer)S.timer.dur=q.timer;
+  if(S.settings.qAutoTimer&&q){ac();const d=S.timer.dur;S.timer={dur:d,state:'running',endAt:Date.now()+d*1000,rem:d*1000,show:true}}
+  else{S.timer.state='idle';S.timer.rem=S.timer.dur*1000;S.timer.show=false}
+  updateTimerUI(true);
+}
+function gotoQ(r,i){cancelSuspense();const list=qs(r);
+  S.pres={screen:'q',round:r,idx:i};vidCmd(S.settings.videoAuto?'play':'pause');
+  if(i<list.length)onQuestionEnter(list[i]);save();}
+function showQuestions(r){if(!qs(r).length){alert(`Für ${roundName(r)} sind noch keine Fragen angelegt (Tab „❓ Fragen“).`);switchTab('questions');return}gotoQ(r,0)}
+function showAnswers(r){if(!qs(r).length){alert(`Für ${roundName(r)} sind noch keine Fragen angelegt (Tab „❓ Fragen“).`);switchTab('questions');return}
+  cancelSuspense();S.pres={screen:'ans',round:r,step:0};vidCmd('pause');save()}
+function ansSteps(r){return 1+2*qs(r).length}
+function navState(){const p=S.pres;
+  if(p.screen==='round')return{next:qs(p.round).length>0,prev:false};
+  if(p.screen==='q')return{next:p.idx<qs(p.round).length,prev:true};
+  if(p.screen==='ans')return{next:p.step<ansSteps(p.round)-1,prev:p.step>0};
+  if(p.screen==='standings'){const st=curSteps();return{next:!p.suspense&&(p.step||0)<st.length-1,prev:(p.step||0)>0||!!p.suspense}}
+  return{next:false,prev:false}}
 function next(){
-  const p=S.pres;if(p.screen!=='standings'||p.suspense)return;
+  const p=S.pres;
+  if(p.screen==='round'){if(qs(p.round).length)gotoQ(p.round,0);return}
+  if(p.screen==='q'){const n=qs(p.round).length;if(p.idx<n-1)gotoQ(p.round,p.idx+1);else if(p.idx===n-1){p.idx=n;vidCmd('pause');save()}return}
+  if(p.screen==='ans'){if(p.step<ansSteps(p.round)-1){const old=Math.floor((p.step-1)/2);p.step++;if(p.step===1||Math.floor((p.step-1)/2)!==old)vidCmd(S.settings.videoAuto&&p.step%2===1?'play':'pause');save()}return}
+  if(p.screen!=='standings'||p.suspense)return;
   const steps=curSteps();if((p.step||0)>=steps.length-1)return;
   p.step=(p.step||0)+1;const nx=steps[p.step];
   if(nx.t==='reveal'||nx.t==='champion'){
@@ -763,7 +921,10 @@ function next(){
   }else save();
 }
 function prev(){
-  const p=S.pres;if(p.screen!=='standings')return;
+  const p=S.pres;
+  if(p.screen==='q'){if(p.idx>0)gotoQ(p.round,Math.min(p.idx,qs(p.round).length)-1);else showRound(p.round);return}
+  if(p.screen==='ans'){if(p.step>0){const old=Math.floor((p.step-1)/2);p.step--;if(p.step===0||Math.floor((p.step-1)/2)!==old)vidCmd('pause');save()}return}
+  if(p.screen!=='standings')return;
   const steps=curSteps();
   if(p.suspense){cancelSuspense();p.step=Math.max(0,p.step-1);save();return}
   if((p.step||0)<=0)return;
@@ -793,13 +954,19 @@ function updateControl(){
   if(IS_BEAMER||!curVM)return;
   const vm=curVM;let now='',nx='—';
   if(vm.screen==='start')now='Startbild';
-  else if(vm.screen==='round')now=`Rundentitel: <b>${esc(vm.name)}</b>`;
+  else if(vm.screen==='round'){now=`Rundentitel: <b>${esc(vm.name)}</b>`;const n=qs(S.pres.round).length;nx=n?'Frage 1':'— (keine Fragen angelegt)'}
+  else if(vm.screen==='q'){const n=qs(S.pres.round).length;now=`<b>${esc(vm.kicker)}</b>`;nx=vm.qn<n?`Frage ${vm.qn+1}`:'Rundenende („Antwortzettel abgeben“)'}
+  else if(vm.screen==='qend'){now=`Rundenende: <b>${esc(vm.name)}</b>`;nx='— (jetzt ✅ Auflösung oder 📊 Wertung)'}
+  else if(vm.screen==='ans'){const n=qs(S.pres.round).length,st=S.pres.step;
+    if(vm.title){now=`<b>Auflösung ${esc(vm.name)}</b> · Titel`;nx='Frage 1 zeigen'}
+    else{now=`<b>${esc(vm.kicker)}</b> · ${vm.revealed?'Lösung sichtbar':'Frage'}`;nx=!vm.revealed?'Lösung aufdecken':(vm.qn<n?`Frage ${vm.qn+1} zeigen`:'— (Auflösung fertig)')}}
   else{const s=vm.steps[vm.step];const L=x=>{const v=stepLabel(x,vm);return typeof v==='function'?v():v};
     now=`<b>${esc(vm.final?'Endstand':'Zwischenstand '+vm.short)}</b> · ${esc(L(s))}${vm.suspense?' <span style="color:var(--pink2)">(Trommelwirbel …)</span>':''}`;
     nx=vm.step<vm.steps.length-1?esc(L(vm.steps[vm.step+1])):'— (Ende der Wertung)';}
   $('#nowBox').innerHTML=`Auf dem Beamer: ${now}<br>Nächster Klick: <span class="nx">${nx}</span>`;
-  $('#nextBtn').disabled=!(vm.screen==='standings'&&!vm.suspense&&vm.step<vm.steps.length-1);
-  $('#prevBtn').disabled=!(vm.screen==='standings'&&(vm.step>0||vm.suspense));
+  const ns=navState();$('#nextBtn').disabled=!ns.next;$('#prevBtn').disabled=!ns.prev;
+  $('#vidCtl').classList.toggle('hidden',!(vm.media&&vm.media.type==='video'));
+  $$('#qList .qitem').forEach(el=>el.classList.toggle('cur',S.pres.screen==='q'&&+$('#qRoundSel').value===S.pres.round&&+el.dataset.i===S.pres.idx));
   const w=[];if(!AUD.drum.url)w.push('Keine Trommelwirbel-Datei gewählt.');if(!AUD.champ.url)w.push('Keine „We are the Champions“-Datei gewählt.');
   $('#audioWarn').textContent=w.length?'⚠ '+w.join(' ')+' (Einstellungen)':'';
 }
@@ -807,7 +974,8 @@ function updateControl(){
 /* ---------- Tabs ---------- */
 let curTab='teams';
 function switchTab(t){curTab=t;$$('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
-  ['teams','scores','settings'].forEach(x=>$('#tab-'+x).classList.toggle('hidden',x!==t));
+  ['teams','scores','questions','settings'].forEach(x=>$('#tab-'+x).classList.toggle('hidden',x!==t));
+  if(t==='questions')renderQuestions();
   if(t==='teams')renderTeams();if(t==='scores'){renderScores();renderTB()}if(t==='settings')renderSettings();}
 
 /* ---------- Teams ---------- */
@@ -877,7 +1045,7 @@ function renderScores(){
   const n=S.settings.numRounds;
   let h='<thead><tr><th>Team</th>';
   for(let r=0;r<n;r++)h+=`<th class="rc"><input class="inp rname" data-r="${r}" value="${esc(S.rounds[r].name)}" placeholder="Runde ${r+1}" aria-label="Name Runde ${r+1}">
-    <div class="rbtns"><button data-act="rtitle" data-r="${r}" title="Rundentitel auf dem Beamer zeigen">🎬</button>
+    <div class="rbtns"><button data-act="rtitle" data-r="${r}" title="Rundentitel auf dem Beamer zeigen">🎬</button><button data-act="rans" data-r="${r}" title="Auflösung dieser Runde zeigen">✅</button>
     <button data-act="rstand" data-r="${r}" title="${r===n-1?'Endstand':'Zwischenstand'} auf dem Beamer zeigen" class="${r===n-1?'final':''}">${r===n-1?'🏆 Ende':'📊 Stand'}</button></div></th>`;
   h+='<th style="text-align:right">Gesamt</th><th style="text-align:right">Platz</th></tr></thead><tbody>';
   S.teams.forEach((t,ti)=>{h+=`<tr><td class="tm"><span class="em">${esc(t.emoji)}</span>${esc(t.name||'(ohne Namen)')}</td>`;
@@ -922,6 +1090,45 @@ function renderRoundSel(){const sel=$('#roundSel');const v=sel.value;
   sel.innerHTML=S.rounds.map((r,i)=>`<option value="${i}">${esc(roundName(i))}${i===S.settings.numRounds-1?' (Finale)':''}</option>`).join('');
   if(v!==''&&+v<S.rounds.length)sel.value=v;}
 
+/* ---------- Fragen-Editor ---------- */
+function delMedia(id){if(MEDIA[id]){URL.revokeObjectURL(MEDIA[id].url);delete MEDIA[id]}sentMedia.delete(id);idbDo('readwrite',st=>st.delete('m_'+id)).catch(()=>{})}
+function qRound(){return Math.max(0,Math.min(S.settings.numRounds-1,+$('#qRoundSel').value||0))}
+function renderQRoundSel(){const sel=$('#qRoundSel');const v=sel.value;
+  sel.innerHTML=S.rounds.map((r,i)=>`<option value="${i}">${esc(roundName(i))} (${(r.questions||[]).length} Fragen)</option>`).join('');
+  sel.value=(v!==''&&+v<S.rounds.length)?v:String(S.pres.round!=null&&S.pres.round<S.rounds.length?S.pres.round:0)}
+function renderQuestions(){
+  renderQRoundSel();const r=qRound(),list=qs(r);
+  $('#qCount').textContent=`${list.length} ${list.length===1?'Frage':'Fragen'}`;
+  $('#vidAuto').checked=!!S.settings.videoAuto;
+  $('#qList').innerHTML=list.map((q,i)=>`<div class="qitem" data-i="${i}">
+    <div class="qnum">${i+1}</div>
+    <div class="qbody"><textarea class="inp qtext" data-i="${i}" rows="2" placeholder="Fragetext (kann leer bleiben, wenn Bild/Video für sich spricht)">${esc(q.text)}</textarea>
+      <div class="qrow"><input class="inp qans" data-i="${i}" value="${esc(q.answer)}" placeholder="Lösung (für die Auflösung)">
+      <input class="inp qtim" data-i="${i}" value="${q.timer?fmtTime(q.timer*1000):''}" placeholder="Timer" title="Eigene Timer-Dauer für diese Frage (leer = aktuelle Einstellung)"></div></div>
+    <div class="qmedia ${q.media?'has':''}" data-i="${i}" title="Bild oder Video wählen oder hierher ziehen">
+      ${q.media?`${q.media.type==='video'?`<video data-tmid="${esc(q.media.id)}" muted preload="metadata"></video>`:`<img data-tmid="${esc(q.media.id)}" alt="">`}
+        <span class="mt">${q.media.type==='video'?'🎬':'🖼'} ${esc(q.media.name)}</span><button class="mx" data-qa="rmmedia" data-i="${i}" title="Medium entfernen">✕</button>`
+       :'🖼 🎬<br>Bild / Video<br>wählen oder hierher ziehen'}</div>
+    <div class="qacts"><button class="show" data-qa="show" data-i="${i}" title="Diese Frage jetzt auf dem Beamer zeigen">▶</button>
+      <button data-qa="up" data-i="${i}" title="nach oben">▲</button><button data-qa="down" data-i="${i}" title="nach unten">▼</button>
+      <button class="del" data-qa="del" data-i="${i}" title="Frage löschen">✕</button></div></div>`).join('')||
+    `<div class="muted" style="padding:20px;text-align:center">Noch keine Fragen für ${esc(roundName(r))}. Lege eine mit „＋ Frage hinzufügen“ an.</div>`;
+  fillThumbs();updateControl();
+}
+function fillThumbs(){$$('#qList [data-tmid]').forEach(el=>{if(el.getAttribute('src'))return;const id=el.dataset.tmid,m=MEDIA[id];
+  if(m){el.src=m.url;return}
+  if(MEDIA_MISSING.has(id)){const box=el.parentElement;if(box&&!box.querySelector('.miss')){const d=document.createElement('div');d.className='miss';d.style.cssText='position:absolute;inset:0;display:grid;place-items:center;color:var(--warn);font-size:12px;text-align:center';d.textContent='⚠ Datei fehlt auf diesem Gerät – bitte neu wählen';box.appendChild(d)}return}
+  ensureMedia(id)})}
+let qMediaTarget=null;
+async function setQuestionMedia(r,i,file){
+  const type=String(file.type).startsWith('video')?'video':String(file.type).startsWith('image')?'image':null;
+  if(!type){alert('Bitte eine Bild- oder Videodatei wählen.');return}
+  const q=qs(r)[i];if(!q)return;if(q.media)delMedia(q.media.id);
+  const id='m'+newId();MEDIA[id]={blob:file,url:URL.createObjectURL(file),type};
+  q.media={id,type,name:file.name};save();renderQuestions();
+  try{await idbDo('readwrite',st=>st.put({blob:file,name:file.name,type},'m_'+id))}catch(e){toast('Achtung: Medium konnte nicht dauerhaft gespeichert werden (nur bis zum Neuladen verfügbar).',5000)}
+}
+
 /* ---------- Timer (Moderator) ---------- */
 let actx=null;
 function ac(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume()}catch(e){}return actx}
@@ -952,7 +1159,7 @@ function updateTimerUI(force){
   $('#tShow').textContent=t.show?'🙈 Ausblenden':'👁 Einblenden';
   $$('#timerCard .chip').forEach(c=>c.classList.toggle('on',+c.dataset.tp===t.dur));
   if(force||document.activeElement!==$('#tDur'))$('#tDur').value=fmtTime(t.dur*1000);
-  $('#tBig').value=S.settings.timerBig?'1':'0';$('#tBeep').checked=!!S.settings.timerBeep;$('#tTick').checked=!!S.settings.timerTick;
+  $('#tBig').value=S.settings.timerBig?'1':'0';$('#tAuto').checked=!!S.settings.qAutoTimer;$('#tBeep').checked=!!S.settings.timerBeep;$('#tTick').checked=!!S.settings.timerTick;
 }
 let lastTickSec=null;
 function timerLoop(){
@@ -1001,7 +1208,7 @@ if(!IS_BEAMER){
     let d=0;if(e.key==='Enter'||e.key==='ArrowDown')d=1;else if(e.key==='ArrowUp')d=-1;if(!d)return;e.preventDefault();
     const nx=$(`#scoreTable input.sc[data-r="${t.dataset.r}"][data-t="${+t.dataset.t+d}"]`);if(nx)nx.focus();else if(d>0)t.blur();});
   st.addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b)return;const r=+b.dataset.r;
-    if(b.dataset.act==='rtitle')showRound(r);else showStandings(r);$('#roundSel').value=r;});
+    if(b.dataset.act==='rtitle')showRound(r);else if(b.dataset.act==='rans')showAnswers(r);else showStandings(r);$('#roundSel').value=r;});
   $('#tbPanel').addEventListener('click',e=>{const b=e.target.closest('button[data-tb]');if(!b)return;const el=$('#tbPanel');
     if(b.dataset.tb==='confirm'){el._groups.forEach(g=>{const ord=[...g.rows].sort((a,b)=>tbRank(a.id)-tbRank(b.id)||a.name.localeCompare(b.name,'de'));ord.forEach((x,k)=>S.tbOrder[x.id]=k)});
       S.tbSig=el._sig;save();renderTB();toast('Reihenfolge für den Endstand gespeichert.');return}
@@ -1035,7 +1242,7 @@ if(!IS_BEAMER){
   $('#resetScores').onclick=()=>{if(!confirm('Wirklich ALLE Punkte löschen? Teams und Einstellungen bleiben erhalten.'))return;
     cancelSuspense();S.rounds.forEach(r=>r.scores={});S.tbOrder={};S.tbSig=null;S.pres={screen:'start'};save();toast('Punkte gelöscht.')};
   $('#resetAll').onclick=()=>{if(!confirm('Wirklich ALLES zurücksetzen (Teams, Punkte, Rundennamen, Einstellungen)?\nTipp: vorher ein Backup exportieren.'))return;
-    cancelSuspense();S=normalize(null);save();switchTab('teams');renderRoundSel();toast('Alles zurückgesetzt.')};
+    cancelSuspense();S.rounds.forEach(r=>(r.questions||[]).forEach(q=>q.media&&delMedia(q.media.id)));S=normalize(null);save();switchTab('teams');renderRoundSel();toast('Alles zurückgesetzt.')};
   // Steuerung
   $('#nextBtn').onclick=next;$('#prevBtn').onclick=prev;
   $('#qStart').onclick=showStart;
@@ -1053,16 +1260,50 @@ if(!IS_BEAMER){
   // Beamer
   $('#openBeamer').onclick=()=>{
     if(beamerWin&&!beamerWin.closed){beamerWin.focus();postVM();return}
-    beamerWin=window.open(location.href.split('#')[0]+'#beamer','wir-pubquiz-beamer','popup=yes,width=1280,height=760');
+    sentMedia.clear();beamerWin=window.open(location.href.split('#')[0]+'#beamer','wir-pubquiz-beamer','popup=yes,width=1280,height=760');
     if(!beamerWin)alert('Das Beamer-Fenster wurde blockiert. Bitte Pop-ups für diese Seite erlauben.');};
   window.addEventListener('message',e=>{const d=e.data;if(!d||d.app!=='pubquiz')return;
-    if(d.type==='hello'){beamerWin=e.source;lastHello=Date.now();postVM();updateBeamerStatus()}
+    if(d.type==='hello'){if(d.first||beamerWin!==e.source)sentMedia.clear();beamerWin=e.source;lastHello=Date.now();postVM();updateBeamerStatus()}
+    if(d.type==='vidmuted')toast('Video läuft auf dem Beamer stumm. Einmal ins Beamer-Fenster klicken (z. B. Doppelklick für Vollbild), dann mit ⟲ Neustart erneut abspielen.',6000);
     if(d.type==='nav'){d.dir>0?next():prev()}
     if(d.type==='timer')timerToggle();});
   function updateBeamerStatus(){const on=Date.now()-lastHello<4000;$('#beamerDot').classList.toggle('on',on);$('#beamerStatus').textContent=on?'Beamer verbunden':'Beamer nicht verbunden'}
   setInterval(updateBeamerStatus,1000);
   window.addEventListener('beforeunload',()=>persist());
 
+  // Fragen
+  $('#qRoundSel').onchange=renderQuestions;
+  $('#addQ').onclick=()=>{const r=qRound();S.rounds[r].questions.push({id:newId(),text:'',answer:'',media:null,timer:null});save();renderQuestions();
+    const t=$$('#qList .qtext').pop();t&&t.focus()};
+  $('#vidAuto').onchange=e=>{S.settings.videoAuto=e.target.checked;save()};
+  const ql=$('#qList');
+  ql.addEventListener('input',e=>{const t=e.target,i=+t.dataset.i,q=qs(qRound())[i];if(!q)return;
+    if(t.classList.contains('qtext'))q.text=t.value;else if(t.classList.contains('qans'))q.answer=t.value;else return;save()});
+  ql.addEventListener('change',e=>{const t=e.target;if(!t.classList.contains('qtim'))return;const q=qs(qRound())[+t.dataset.i];if(!q)return;
+    if(!t.value.trim()){q.timer=null;save();return}const v=parseDur(t.value);
+    if(v==null){toast('Ungültige Timer-Dauer. Beispiele: 45 oder 1:30');t.value=q.timer?fmtTime(q.timer*1000):'';return}
+    q.timer=v;t.value=fmtTime(v*1000);save()});
+  ql.addEventListener('click',e=>{const b=e.target.closest('[data-qa]');const r=qRound(),list=qs(r);
+    if(b){e.stopPropagation();const i=+b.dataset.i,q=list[i];
+      if(b.dataset.qa==='show'){gotoQ(r,i);$('#roundSel').value=r}
+      if(b.dataset.qa==='rmmedia'&&q.media){delMedia(q.media.id);q.media=null;save();renderQuestions()}
+      if(b.dataset.qa==='up'&&i>0){[list[i-1],list[i]]=[list[i],list[i-1]];save();renderQuestions()}
+      if(b.dataset.qa==='down'&&i<list.length-1){[list[i+1],list[i]]=[list[i],list[i+1]];save();renderQuestions()}
+      if(b.dataset.qa==='del'){if((q.text.trim()||q.answer.trim()||q.media)&&!confirm(`Frage ${i+1} wirklich löschen?`))return;
+        if(q.media)delMedia(q.media.id);list.splice(i,1);
+        if(S.pres.screen==='q'&&S.pres.round===r&&S.pres.idx>=list.length)S.pres.idx=list.length;save();renderQuestions()}
+      return}
+    const box=e.target.closest('.qmedia');if(box&&!box.classList.contains('has')){qMediaTarget={r,i:+box.dataset.i};$('#qFile').click()}});
+  ql.addEventListener('dblclick',e=>{const box=e.target.closest('.qmedia.has');if(box){qMediaTarget={r:qRound(),i:+box.dataset.i};$('#qFile').click()}});
+  ql.addEventListener('dragover',e=>{const box=e.target.closest('.qmedia');if(box){e.preventDefault();box.classList.add('drag')}});
+  ql.addEventListener('dragleave',e=>{const box=e.target.closest('.qmedia');if(box)box.classList.remove('drag')});
+  ql.addEventListener('drop',e=>{const box=e.target.closest('.qmedia');if(!box)return;e.preventDefault();box.classList.remove('drag');
+    const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)setQuestionMedia(qRound(),+box.dataset.i,f)});
+  $('#qFile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f&&qMediaTarget)setQuestionMedia(qMediaTarget.r,qMediaTarget.i,f)};
+  $('#qQuest').onclick=()=>showQuestions(+$('#roundSel').value);
+  $('#qAns').onclick=()=>showAnswers(+$('#roundSel').value);
+  $$('#vidCtl [data-vc]').forEach(b=>b.onclick=()=>{vidCmd(b.dataset.vc);save()});
+  $('#tAuto').onchange=e=>{S.settings.qAutoTimer=e.target.checked;save()};
   // Timer
   $('#tStart').onclick=timerStart;$('#tPause').onclick=timerPauseResume;$('#tReset').onclick=timerReset;$('#tAdd').onclick=()=>timerAdd(10);
   $('#tShow').onclick=()=>{S.timer.show=!S.timer.show;save()};

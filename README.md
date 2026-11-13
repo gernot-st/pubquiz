@@ -16,10 +16,12 @@ Die App besteht aus einer einzigen HTML-Datei (`PubQuiz.html`), die komplett off
 
 - **Teams** mit Name und Emoji anlegen, sortieren und löschen. CSV-Import und -Export (`Teamname;Emoji`, UTF-8 mit BOM, Excel-kompatibel). Der Import erkennt außerdem Komma und Tab als Trennzeichen sowie Windows-1252-Kodierung.
 - **Punkte** pro Runde eingeben (ganze Zahlen ≥ 0), mit Rundenname (Standard „Runde X“). Die Rundenanzahl ist einstellbar (Standard 4).
+- **Fragen** pro Runde (Tab „❓ Fragen“): Text, Bild oder Video (per Klick oder Drag & Drop), Lösung und optional eine eigene Timer-Dauer. Ablauf am Beamer: Rundentitel → mit *Weiter* durch die Fragen → „Antwortzettel abgeben“. Videos laufen auf Wunsch automatisch und lassen sich mit ▶/⏸/⟲ steuern.
+- **Auflösung** (eigener Button ✅ pro Runde): pro Frage zuerst die Frage, mit dem nächsten Klick die Lösung.
 - **Zwischenstand**: Titelbild → alle Plätze ab 6 auf einmal → Countdown von Platz 5 bis 1, jeweils mit Trommelwirbel. Bei Gleichstand teilen sich die Teams den Platz.
 - **Endstand**: Die Plätze 1–3 müssen eindeutig sein. Bei Gleichstand fordert die App ein Stechen, in dem die Moderation die Reihenfolge festlegt. Der Sieger wird mit Konfetti und „We are the Champions“ aufgedeckt, danach folgt die komplette Endtabelle.
 - **Steuerung**: Leertaste, →, Bild↓ oder ein Presenter schalten weiter, ←/Bild↑ zurück. Das funktioniert auch, wenn das Beamer-Fenster den Fokus hat. In der Moderationsansicht gibt es eine Live-Vorschau des Beamers.
-- **Timer** für jede Frage: Die Dauer ist frei einstellbar (z. B. `45` oder `1:30`), dazu gibt es Schnellwahl-Knöpfe. Start (beginnt immer von vorne), Pause/Weiter, +10 s, Reset, Ein- und Ausblenden. Der Timer erscheint als Neon-Ring über dem aktuellen Beamer-Bild, klein in der Ecke oder groß in der Mitte. In den letzten 10 Sekunden färbt er sich pink, bei Ablauf erscheint „ZEIT!“. Optional gibt es einen Signalton und ein Ticken in den letzten 5 Sekunden (vom Browser erzeugt, keine Datei nötig). Taste **T** = Start/Pause.
+- **Timer** für jede Frage: Die Dauer ist frei einstellbar (z. B. `45` oder `1:30`), dazu gibt es Schnellwahl-Knöpfe. Start (beginnt immer von vorne), Pause/Weiter, +10 s, Reset, Ein- und Ausblenden. Der Timer erscheint als Neon-Ring über dem aktuellen Beamer-Bild, klein in der Ecke oder groß in der Mitte. In den letzten 10 Sekunden färbt er sich pink, bei Ablauf erscheint „ZEIT!“. Optional startet der Timer bei jeder neuen Frage automatisch. Außerdem gibt es optional einen Signalton und ein Ticken in den letzten 5 Sekunden (vom Browser erzeugt, keine Datei nötig). Taste **T** = Start/Pause.
 - **Sicherung**: Der Spielstand wird automatisch im Browser gespeichert. Zusätzlich gibt es einen JSON-Backup-Export und -Import.
 
 ## Projektstruktur
@@ -40,5 +42,6 @@ python3 src/build.py
 
 ## Hinweise
 
+- Bilder und Videos der Fragen werden im Browser gespeichert (IndexedDB). Sie sind nicht im JSON-Backup enthalten, nur die Texte, Lösungen und Timer-Werte.
 - Audiodateien werden nicht mitgeliefert (Urheberrecht) und auch nicht ins Backup exportiert. Sie bleiben aber im Browser gespeichert.
 - Für öffentliche Musikwiedergabe ist in Österreich in der Regel die AKM zuständig.
