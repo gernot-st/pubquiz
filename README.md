@@ -15,6 +15,7 @@ Die App besteht aus einer einzigen HTML-Datei (`PubQuiz.html`), die komplett off
 ## Funktionen
 
 - **Teams** mit Name und Emoji anlegen, sortieren und löschen. CSV-Import und -Export (`Teamname;Emoji`, UTF-8 mit BOM, Excel-kompatibel). Der Import erkennt außerdem Komma und Tab als Trennzeichen sowie Windows-1252-Kodierung.
+- **Team-Vorstellung** am Beamer (Tab „Teams“): alle Teams als Neon-Karten mit Emoji und Name. Entweder **einzeln per Klick** aufdecken (das gerade vorgestellte Team leuchtet gold) oder **alle auf einmal** zeigen.
 - **Punkte** pro Runde eingeben (ganze Zahlen ≥ 0), mit Rundenname (Standard „Runde X“). Die Rundenanzahl ist einstellbar (Standard 4).
 - **Fragen** pro Runde (Tab „❓ Fragen“): Fragenummer (frei wählbar, z. B. `7` oder `2a`; leer = automatisch), Text, Bild oder Video (per Klick oder Drag & Drop), Lösung und optional eine eigene Timer-Dauer. Ablauf am Beamer: Rundentitel → mit *Weiter* durch die Fragen. In der Steuerung lassen sich Runde **und Fragenummer** wählen, um direkt bei einer bestimmten Frage (oder deren Auflösung) einzusteigen. Videos laufen auf Wunsch automatisch und lassen sich mit ▶/⏸/⟲ steuern.
 - **Auflösung** (eigener Button ✅ pro Runde): pro Frage zuerst die Frage, mit dem nächsten Klick die Lösung.

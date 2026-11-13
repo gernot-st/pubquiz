@@ -149,6 +149,21 @@ button,input,select,textarea{font:inherit;color:inherit}
   background:rgba(40,20,110,.7);border:3px solid rgba(143,250,255,.7);box-shadow:0 0 12px rgba(63,240,255,.5)}
 .l-champ .trophy{font-size:120px;position:absolute;top:80px;animation:bob 1.4s ease-in-out infinite alternate}
 
+/* --- Team-Vorstellung --- */
+.tgrid{position:absolute;left:100px;right:100px;top:225px;bottom:60px;display:grid;gap:20px;align-content:center;justify-content:center}
+.tcard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.12em;padding:.2em .3em;border-radius:22px;min-width:0;
+  border:3px dashed rgba(143,250,255,.35);background:rgba(30,16,90,.45);transition:background .4s,border-color .4s,box-shadow .4s}
+.tcard .te{font-family:var(--emoji);line-height:1;opacity:0}
+.tcard .tn{font:800 1em/1.1 Montserrat,sans-serif;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word;opacity:0}
+.tcard .tq{position:absolute;inset:0;display:grid;place-items:center;font:900 2em Montserrat,sans-serif;color:rgba(255,255,255,.18)}
+.tcard.shown{border:3px solid #8ffaff;background:linear-gradient(160deg,rgba(60,28,150,.9),rgba(95,35,160,.7));
+  box-shadow:0 0 12px rgba(63,240,255,.55),inset 0 0 20px rgba(255,47,208,.3)}
+.tcard.shown .tq{display:none}
+.tcard.shown .te,.tcard.shown .tn{animation:reveal .7s cubic-bezier(.2,1.5,.4,1) forwards}
+.tcard.cur{border-color:#ffe27a;box-shadow:0 0 22px #ffd23f,0 0 60px rgba(255,176,0,.55),inset 0 0 26px rgba(255,210,63,.35);animation:flash .9s ease;z-index:2}
+.tcard.cur .tn{color:#fff7cf;text-shadow:0 0 14px #ffb300}
+
 /* --- Fragen --- */
 .l-q .hdr,.l-ans .hdr{top:34px}
 .qwrap{position:absolute;left:110px;right:110px;top:130px;bottom:55px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px}
@@ -347,6 +362,11 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
             <button class="btn" id="importCsvBtn">📥 CSV importieren</button>
             <button class="btn" id="exportCsv">📤 CSV exportieren</button>
             <input type="file" id="importCsv" accept=".csv,.txt,text/csv,text/plain" hidden>
+          </div>
+          <div class="toolbar">
+            <span class="muted" style="font-weight:800">Am Beamer vorstellen:</span>
+            <button class="btn pink" id="presTeams" title="Jedes Team einzeln per Klick (Weiter / Leertaste) aufdecken">📺 Einzeln per Klick</button>
+            <button class="btn" id="presTeamsAll" title="Alle Teams sofort als Übersicht zeigen">Alle auf einmal</button>
           </div>
           <table class="grid" id="teamTable"></table>
           <div class="hint">Emoji einfügen: Windows <span class="kbd">Win</span> + <span class="kbd">.</span> · Mac <span class="kbd">Ctrl</span> + <span class="kbd">Cmd</span> + <span class="kbd">Leertaste</span>.
@@ -553,7 +573,7 @@ function renderStage(host,vm){
   const o=host._st||initStage(host);
   const json=JSON.stringify(vm);if(json===o.json)return;o.json=json;
   const sub=subOf(vm);
-  o.st.classList.toggle('list',['rest','top','table','champ','q','ans'].includes(sub));
+  o.st.classList.toggle('list',['rest','top','table','champ','q','ans','teams'].includes(sub));
   o.vid=vm.vid||null;
   o.st.querySelector('.site').textContent=vm.site||'';
   const key=vm.key+'|'+sub;
@@ -566,6 +586,7 @@ function renderStage(host,vm){
     if(sub==='champ')el._stop=confetti(el.querySelector('canvas'));
   }
   if(sub==='top')applyReveal(o.layer,vm);
+  if(sub==='teams')$$('.tcard',o.layer).forEach((c,i)=>{c.classList.toggle('shown',i<vm.step);c.classList.toggle('cur',!!vm.one&&i===vm.step-1)});
   if(sub==='ans'){const a=o.layer.querySelector('.qa');if(a)a.classList.toggle('shown',!!vm.revealed)}
   applyVid(o);
   updateTimerView(o,vm.timer);
@@ -632,6 +653,15 @@ function rowsBlock(list,showLast){
 function buildLayer(vm,sub){
   const el=document.createElement('div');el.className='layer l-'+sub;
   if(sub==='q'||sub==='ans'){el.innerHTML=qLayerHTML(vm,sub==='ans');return el}
+  if(sub==='teams'){const n=vm.teams.length;
+    const cols=n<=3?Math.max(1,n):n<=4?4:n<=6?3:n<=8?4:n<=20?5:n<=24?6:n<=35?7:8,rows=Math.max(1,Math.ceil(n/cols)),gap=20;
+    const ch=Math.min(330,(H-225-60-gap*(rows-1))/rows),cw=Math.min(480,(W-200-gap*(cols-1))/cols);
+    const fs=Math.min(ch*.17,cw*.1);
+    el.innerHTML=`<div class="hdr"><div class="k n-pink">Herzlich willkommen!</div><div class="t n-white">${n===1?'1 TEAM':`DIE ${n} TEAMS`}</div></div>
+      <div class="tgrid" style="grid-template-columns:repeat(${cols},${cw}px);grid-auto-rows:${ch}px;font-size:${fs}px">`+
+      vm.teams.map(t=>`<div class="tcard"><div class="tq">?</div><div class="te" style="font-size:${Math.min(ch*.42,cw*.36)}px">${esc(t.emoji)}</div>
+        <div class="tn" style="font-size:${Math.round(fs*Math.max(.7,Math.min(1,22/Math.max(1,glen(t.name)))))}px">${esc(t.name)}</div></div>`).join('')+'</div>';
+    return el}
   if(sub==='anstitle'){el.classList.add('l-center');
     el.innerHTML=`<div class="main n-yellow pop" style="font:900 190px/1 Montserrat,sans-serif">AUFLÖSUNG</div><div class="subbox n-box pop2" style="padding:30px 70px;font:700 80px Montserrat,sans-serif">${esc(vm.name)}</div>`;return el}
   if(sub==='start'){
@@ -814,6 +844,8 @@ function standingsData(r,final){
 }
 function buildVM(){
   const st=S.settings,p=S.pres,base={site:st.site,timer:{...S.timer,big:!!st.timerBig}};
+  if(p.screen==='teams'){const teams=S.teams.map(t=>({name:t.name.trim()||'(ohne Namen)',emoji:t.emoji.trim()}));
+    return{...base,screen:'teams',key:'teams|'+hashStr(JSON.stringify(teams)),teams,step:Math.max(0,Math.min(teams.length,p.step|0)),one:!!p.one}}
   if(p.screen==='q'&&p.round<st.numRounds){const list=qs(p.round),n=list.length;
     if(!n)return{...base,screen:'round',key:'round|'+p.round+'|'+roundName(p.round)+'|'+st.numRounds,idx:p.round,n:st.numRounds,name:roundName(p.round)};
     const qi=Math.max(0,Math.min(n-1,p.idx|0)),q=list[qi];
@@ -901,6 +933,7 @@ function showAnswers(r,i=0){const n=qs(r).length;if(!n){alert(`Für ${roundName(
   i=Math.min(i,n-1);cancelSuspense();S.pres={screen:'ans',round:r,step:i>0?1+2*i:0};vidCmd(i>0&&S.settings.videoAuto?'play':'pause');save()}
 function ansSteps(r){return 1+2*qs(r).length}
 function navState(){const p=S.pres;
+  if(p.screen==='teams')return{next:(p.step|0)<S.teams.length,prev:(p.step|0)>0};
   if(p.screen==='round')return{next:qs(p.round).length>0,prev:false};
   if(p.screen==='q')return{next:p.idx<qs(p.round).length-1,prev:true};
   if(p.screen==='ans')return{next:p.step<ansSteps(p.round)-1,prev:p.step>0};
@@ -908,6 +941,7 @@ function navState(){const p=S.pres;
   return{next:false,prev:false}}
 function next(){
   const p=S.pres;
+  if(p.screen==='teams'){if((p.step|0)<S.teams.length){p.step=(p.step|0)+1;p.one=true;save()}return}
   if(p.screen==='round'){if(qs(p.round).length)gotoQ(p.round,0);return}
   if(p.screen==='q'){const n=qs(p.round).length;if(p.idx<n-1)gotoQ(p.round,p.idx+1);return}
   if(p.screen==='ans'){if(p.step<ansSteps(p.round)-1){const old=Math.floor((p.step-1)/2);p.step++;if(p.step===1||Math.floor((p.step-1)/2)!==old)vidCmd(S.settings.videoAuto&&p.step%2===1?'play':'pause');save()}return}
@@ -928,6 +962,7 @@ function next(){
 }
 function prev(){
   const p=S.pres;
+  if(p.screen==='teams'){if((p.step|0)>0){p.step--;p.one=true;save()}return}
   if(p.screen==='q'){if(p.idx>0)gotoQ(p.round,Math.min(p.idx,qs(p.round).length)-1);else showRound(p.round);return}
   if(p.screen==='ans'){if(p.step>0){const old=Math.floor((p.step-1)/2);p.step--;if(p.step===0||Math.floor((p.step-1)/2)!==old)vidCmd('pause');save()}return}
   if(p.screen!=='standings')return;
@@ -960,6 +995,7 @@ function updateControl(){
   if(IS_BEAMER||!curVM)return;
   const vm=curVM;let now='',nx='—';
   if(vm.screen==='start')now='Startbild';
+  else if(vm.screen==='teams'){const n=vm.teams.length;now=`Team-Vorstellung · <b>${vm.step} von ${n}</b> gezeigt`;nx=vm.step<n?`Team ${vm.step+1}: ${esc(vm.teams[vm.step].emoji)} ${esc(vm.teams[vm.step].name)}`:'— (alle Teams gezeigt)'}
   else if(vm.screen==='round'){now=`Rundentitel: <b>${esc(vm.name)}</b>`;const n=qs(S.pres.round).length;nx=n?'Frage 1':'— (keine Fragen angelegt)'}
   else if(vm.screen==='q'){const n=qs(S.pres.round).length;now=`<b>${esc(vm.kicker)}</b>`;nx=vm.qn<n?`Frage ${esc(qLabel(S.pres.round,vm.qn))}`:'— (letzte Frage, danach ✅ Auflösung oder 📊 Wertung)'}
   else if(vm.screen==='ans'){const n=qs(S.pres.round).length,st=S.pres.step;
@@ -1207,6 +1243,8 @@ if(!IS_BEAMER){
     save();renderTeams();});
   $('#importCsvBtn').onclick=()=>$('#importCsv').click();
   $('#importCsv').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)importCsvFile(f)};
+  const presTeams=all=>{if(!S.teams.length){alert('Es sind noch keine Teams angelegt.');return}cancelSuspense();S.pres={screen:'teams',step:all?S.teams.length:0,one:!all};save()};
+  $('#presTeams').onclick=()=>presTeams(false);$('#presTeamsAll').onclick=()=>presTeams(true);
   $('#exportCsv').onclick=()=>{if(!S.teams.length){alert('Keine Teams zum Exportieren.');return}exportCsv()};
   // Punkte
   const st=$('#scoreTable');
