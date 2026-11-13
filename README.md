@@ -4,6 +4,8 @@ Moderationssoftware für das Pub Quiz von **WIR für Eichgraben**: Teams verwalt
 
 Die App besteht aus einer einzigen HTML-Datei (`PubQuiz.html`), die komplett offline im Browser läuft. Schriften und Logo sind eingebettet, es ist keine Installation nötig.
 
+**Online-Version:** https://gernot-st.github.io/pubquiz/ (für den Abend selbst besser die lokale Datei verwenden, sie läuft ohne Internet)
+
 ## Schnellstart
 
 1. `PubQuiz.html` in **Chrome oder Edge** öffnen. Das ist die Moderationsansicht für den Laptop.
