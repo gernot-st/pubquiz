@@ -393,11 +393,18 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
           </div>
           <div id="qList"></div>
           <input type="file" id="qFile" accept="image/*,video/*" hidden>
+          <div class="toolbar" style="margin-top:14px">
+            <span class="muted" style="font-weight:800">Fragen übertragen:</span>
+            <button class="btn" id="qExpRound" title="Fragen der oben gewählten Runde inkl. Bilder/Videos speichern">📤 Diese Runde exportieren</button>
+            <button class="btn" id="qExpAll" title="Fragen aller Runden inkl. Bilder/Videos speichern">📤 Alle Runden exportieren</button>
+            <button class="btn cyan" id="qImpBtn" title="Fragen-Datei (.pqz) laden">📥 Fragen importieren</button>
+            <input type="file" id="qImp" accept=".pqz" hidden>
+          </div>
           <label class="chk"><input type="checkbox" id="vidAuto"> Videos beim Anzeigen automatisch abspielen</label>
           <div class="hint">Pro Frage: Text (Zeilenumbrüche erlaubt, Emojis wie 🇦🇹 funktionieren), Bild oder Video (Klick oder Drag &amp; Drop), Lösung für die Auflösung
             und optional eine eigene Timer-Dauer. Mit ▶ zeigst du eine Frage sofort auf dem Beamer.<br>
             Ablauf: <b>🎬 Rundentitel</b> → Weiter → Fragen. Rechts in der Steuerung kannst du Runde und Fragenummer wählen. Danach <b>✅ Auflösung</b>: pro Frage zuerst die Frage, mit dem nächsten Klick die Lösung.<br>
-            Bilder und Videos werden im Browser gespeichert. Sie sind nicht im JSON-Backup enthalten.</div>
+            Bilder und Videos werden im Browser gespeichert. Zum Übertragen auf ein anderes Gerät unten „Fragen exportieren“ verwenden (inkl. Bilder/Videos).</div>
         </div>
       </section>
 
@@ -1138,6 +1145,70 @@ function renderQNumSel(force){const sel=$('#qNumSel');const r=+$('#roundSel').va
 const qNumPicked=()=>Math.max(0,+$('#qNumSel').value||0);
 
 /* ---------- Fragen-Editor ---------- */
+/* ---------- Fragen Export / Import (.pqz) ----------
+   Aufbau: Zeile 1 "WIRPQZ1", Zeile 2 Länge des Manifests in Bytes, dann Manifest (JSON, UTF-8),
+   danach die Mediendateien direkt hintereinander (Offsets im Manifest). */
+const PQZ_MAGIC='WIRPQZ1';
+async function getMediaBlob(id){if(MEDIA[id]&&MEDIA[id].blob)return MEDIA[id].blob;
+  try{const v=await idbDo('readonly',st=>st.get('m_'+id));return v&&v.blob||null}catch(e){return null}}
+async function exportQuestions(roundIdxs){
+  const blobs=[];let off=0,missing=0,count=0;
+  const rounds=[];
+  for(const r of roundIdxs){const qsOut=[];
+    for(const q of qs(r)){count++;let media=null;
+      if(q.media){const b=await getMediaBlob(q.media.id);
+        if(b){media={type:q.media.type,name:q.media.name,mime:b.type||'',offset:off,size:b.size};blobs.push(b);off+=b.size}else missing++}
+      qsOut.push({nr:q.nr||'',text:q.text,answer:q.answer,timer:q.timer||null,media})}
+    rounds.push({index:r,name:S.rounds[r].name,questions:qsOut})}
+  if(!count){alert('Es gibt keine Fragen zum Exportieren.');return}
+  const manifest=new TextEncoder().encode(JSON.stringify({app:'wir-pubquiz-fragen',version:1,exported:new Date().toISOString(),rounds}));
+  const header=`${PQZ_MAGIC}\n${manifest.length}\n`;
+  const name=roundIdxs.length===1?`pubquiz-fragen_${roundName(roundIdxs[0]).replace(/[^\p{L}\p{N}]+/gu,'-')}_${stamp()}.pqz`:`pubquiz-fragen_alle_${stamp()}.pqz`;
+  const blob=new Blob([header,manifest,...blobs],{type:'application/octet-stream'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
+  toast(`${count} ${count===1?'Frage':'Fragen'} exportiert${blobs.length?` (inkl. ${blobs.length} Bilder/Videos, ${(off/1048576).toFixed(1)} MB)`:''}.`+(missing?` ⚠ ${missing} Medien fehlten auf diesem Gerät.`:''),5000);
+}
+async function importQuestions(file){
+  let man,dataStart;
+  try{
+    const head=new TextDecoder().decode(await file.slice(0,64).arrayBuffer());
+    const m=head.match(/^WIRPQZ1\n(\d+)\n/);if(!m)throw new Error('Das ist keine Fragen-Datei (.pqz) dieses Pub Quiz.');
+    const hl=m[0].length,ml=+m[1];dataStart=hl+ml;
+    man=JSON.parse(new TextDecoder().decode(await file.slice(hl,hl+ml).arrayBuffer()));
+    if(!man||man.app!=='wir-pubquiz-fragen'||!Array.isArray(man.rounds))throw new Error('Ungültiger Dateiinhalt.');
+  }catch(e){alert('Import nicht möglich: '+e.message);return}
+  const total=man.rounds.reduce((a,r)=>a+(r.questions||[]).length,0);
+  if(!total){alert('Die Datei enthält keine Fragen.');return}
+  const single=man.rounds.length===1;
+  // Zielrunden bestimmen
+  let targets;
+  if(single){targets=[qRound()]}
+  else{const maxIdx=Math.max(...man.rounds.map(r=>r.index|0));
+    if(maxIdx>=S.settings.numRounds){if(!confirm(`Die Datei enthält Fragen für ${maxIdx+1} Runden, eingestellt sind ${S.settings.numRounds}.\nRundenanzahl auf ${maxIdx+1} erhöhen?`))return;
+      S.settings.numRounds=maxIdx+1;ensureRounds(S)}
+    targets=man.rounds.map(r=>r.index|0)}
+  const where=single?`in ${roundName(targets[0])}`:`in ${man.rounds.length} Runden`;
+  const hasExisting=targets.some(r=>qs(r).length);
+  let replace=false;
+  if(hasExisting)replace=confirm(`${total} ${total===1?'Frage':'Fragen'} ${where} importieren.\n\nOK = vorhandene Fragen dieser Runde(n) ERSETZEN\nAbbrechen = Fragen ANHÄNGEN`);
+  else if(!confirm(`${total} ${total===1?'Frage':'Fragen'} ${where} importieren?`))return;
+  let mediaCount=0,failed=0;
+  for(let k=0;k<man.rounds.length;k++){const src=man.rounds[k],r=targets[k];const round=S.rounds[r];
+    if(replace){(round.questions||[]).forEach(q=>q.media&&delMedia(q.media.id));round.questions=[];
+      if(!single&&src.name&&String(src.name).trim())round.name=String(src.name)}
+    for(const q of (src.questions||[])){
+      let media=null;
+      if(q.media&&Number.isFinite(q.media.offset)&&Number.isFinite(q.media.size)){
+        const b=file.slice(dataStart+q.media.offset,dataStart+q.media.offset+q.media.size,q.media.mime||'');
+        const id='m'+newId(),type=q.media.type==='video'?'video':'image';
+        try{await idbDo('readwrite',st=>st.put({blob:b,name:q.media.name||'',type},'m_'+id))}catch(e){failed++}
+        MEDIA[id]={blob:b,url:URL.createObjectURL(b),type};media={id,type,name:String(q.media.name||'')};mediaCount++}
+      round.questions.push(...normQuestions([{id:newId(),nr:q.nr,text:q.text,answer:q.answer,timer:q.timer,media}]))}}
+  save();renderRoundSel();renderQuestions();
+  toast(`${total} ${total===1?'Frage':'Fragen'} importiert${mediaCount?` (inkl. ${mediaCount} Bilder/Videos)`:''}.`+(failed?` ⚠ ${failed} Medien konnten nicht dauerhaft gespeichert werden.`:''),5000);
+}
+
 function delMedia(id){if(MEDIA[id]){URL.revokeObjectURL(MEDIA[id].url);delete MEDIA[id]}sentMedia.delete(id);idbDo('readwrite',st=>st.delete('m_'+id)).catch(()=>{})}
 function qRound(){return Math.max(0,Math.min(S.settings.numRounds-1,+$('#qRoundSel').value||0))}
 function renderQRoundSel(){const sel=$('#qRoundSel');const v=sel.value;
@@ -1321,6 +1392,10 @@ if(!IS_BEAMER){
   window.addEventListener('beforeunload',()=>persist());
 
   // Fragen
+  $('#qExpRound').onclick=()=>exportQuestions([qRound()]);
+  $('#qExpAll').onclick=()=>exportQuestions(S.rounds.map((_,i)=>i).filter(i=>qs(i).length));
+  $('#qImpBtn').onclick=()=>$('#qImp').click();
+  $('#qImp').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)importQuestions(f)};
   $('#qRoundSel').onchange=renderQuestions;
   $('#addQ').onclick=()=>{const r=qRound();S.rounds[r].questions.push({id:newId(),text:'',answer:'',media:null,timer:null,nr:''});save();renderQuestions();
     const t=$$('#qList .qtext').pop();t&&t.focus()};
