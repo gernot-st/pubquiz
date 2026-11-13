@@ -396,18 +396,27 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
           </div>
           <div id="qList"></div>
           <input type="file" id="qFile" accept="image/*,video/*" hidden>
-          <div class="toolbar" style="margin-top:14px">
-            <span class="muted" style="font-weight:800">Fragen übertragen:</span>
-            <button class="btn" id="qExpRound" title="Fragen der oben gewählten Runde inkl. Bilder/Videos speichern">📤 Diese Runde exportieren</button>
-            <button class="btn" id="qExpAll" title="Fragen aller Runden inkl. Bilder/Videos speichern">📤 Alle Runden exportieren</button>
-            <button class="btn cyan" id="qImpBtn" title="Fragen-Datei (.pqz) laden">📥 Fragen importieren</button>
+          <h3>Fragenpaket <span class="muted">(.pqz – alles inkl. Bilder &amp; Videos, zum Übertragen auf ein anderes Gerät)</span></h3>
+          <div class="toolbar">
+            <button class="btn" id="qExpRound" title="Fragen der oben gewählten Runde inkl. Bilder/Videos speichern">📦 Diese Runde exportieren</button>
+            <button class="btn" id="qExpAll" title="Fragen aller Runden inkl. Bilder/Videos speichern">📦 Alle Runden exportieren</button>
+            <button class="btn cyan" id="qImpBtn" title="Fragenpaket (.pqz) laden">📥 Fragenpaket importieren</button>
             <input type="file" id="qImp" accept=".pqz" hidden>
           </div>
+          <h3>Fragenliste <span class="muted">(.csv – nur Text, z. B. zum Bearbeiten in Excel)</span></h3>
+          <div class="toolbar">
+            <button class="btn" id="qCsvRound" title="Texte der oben gewählten Runde als CSV speichern">📄 Diese Runde exportieren</button>
+            <button class="btn" id="qCsvAll" title="Texte aller Runden als CSV speichern">📄 Alle Runden exportieren</button>
+            <button class="btn cyan" id="qCsvImpBtn" title="Fragenliste (.csv) laden">📥 Fragenliste importieren</button>
+            <input type="file" id="qCsvImp" accept=".csv,.txt,text/csv,text/plain" hidden>
+          </div>
+          <div class="hint">CSV-Spalten: <code>Runde;Rundenname;Nr;Frage;Lösung;Timer</code>. Pflicht ist nur „Frage“ oder „Lösung“.
+            Ohne Spalte „Runde“ landen die Fragen in der oben gewählten Runde. „Timer“ als <code>45</code> oder <code>1:30</code>. Zeilenumbrüche in Excel-Zellen (Alt+Enter) bleiben erhalten.</div>
           <label class="chk"><input type="checkbox" id="vidAuto"> Videos beim Anzeigen automatisch abspielen</label>
           <div class="hint">Pro Frage: Text (Zeilenumbrüche erlaubt, Emojis wie 🇦🇹 funktionieren), Bild oder Video (Klick oder Drag &amp; Drop), Lösung für die Auflösung
             und optional eine eigene Timer-Dauer. Mit ▶ zeigst du eine Frage sofort auf dem Beamer.<br>
             Ablauf: <b>🎬 Rundentitel</b> → Weiter → Fragen. Rechts in der Steuerung kannst du Runde und Fragenummer wählen. Danach <b>✅ Auflösung</b>: pro Frage zuerst die Frage, mit dem nächsten Klick die Lösung.<br>
-            Bilder und Videos werden im Browser gespeichert. Zum Übertragen auf ein anderes Gerät unten „Fragen exportieren“ verwenden (inkl. Bilder/Videos).</div>
+            Bilder und Videos werden im Browser gespeichert. Zum Übertragen auf ein anderes Gerät unten das <b>Fragenpaket</b> verwenden (inkl. Bilder/Videos), zum Bearbeiten in Excel die <b>Fragenliste</b> (nur Text).</div>
         </div>
       </section>
 
@@ -804,7 +813,7 @@ let S;
 function load(){try{const raw=localStorage.getItem(KEY);if(raw)return normalize(JSON.parse(raw))}catch(e){}return normalize(null)}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function save(){persist();sync()}
-function toast(msg,ms=2600){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),ms)}
+function toast(msg,ms=2600){$$('.toast').forEach(x=>x.remove());const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),ms)}
 function download(name,content,type){const b=new Blob([content],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
 function stamp(){const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`}
 const roundName=i=>(S.rounds[i]?.name||'').trim()||`Runde ${i+1}`;
@@ -1170,13 +1179,65 @@ async function exportQuestions(roundIdxs){
   const blob=new Blob([header,manifest,...blobs],{type:'application/octet-stream'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
-  toast(`${count} ${count===1?'Frage':'Fragen'} exportiert${blobs.length?` (inkl. ${blobs.length} Bilder/Videos, ${(off/1048576).toFixed(1)} MB)`:''}.`+(missing?` ⚠ ${missing} Medien fehlten auf diesem Gerät.`:''),5000);
+  toast(`${count} ${count===1?'Frage':'Fragen'} als Fragenpaket exportiert${blobs.length?` (inkl. ${blobs.length} Bilder/Videos, ${(off/1048576).toFixed(1)} MB)`:''}.`+(missing?` ⚠ ${missing} Medien fehlten auf diesem Gerät.`:''),5000);
 }
+/* ---------- Fragenliste (CSV, nur Text) ---------- */
+const Q_CSV_HEAD=['Runde','Rundenname','Nr','Frage','Lösung','Timer'];
+function exportQuestionsCsv(roundIdxs){
+  const lines=[Q_CSV_HEAD.join(';')];let count=0;
+  for(const r of roundIdxs)qs(r).forEach(q=>{count++;
+    lines.push([r+1,S.rounds[r].name,q.nr||'',q.text,q.answer,q.timer?fmtTime(q.timer*1000):''].map(csvField).join(';'))});
+  if(!count){alert('Es gibt keine Fragen zum Exportieren.');return}
+  const name=roundIdxs.length===1?`pubquiz-fragenliste_${roundName(roundIdxs[0]).replace(/[^\p{L}\p{N}]+/gu,'-')}_${stamp()}.csv`:`pubquiz-fragenliste_alle_${stamp()}.csv`;
+  download(name,'﻿'+lines.join('\r\n')+'\r\n','text/csv;charset=utf-8');
+  toast(`${count} ${count===1?'Frage':'Fragen'} als Fragenliste exportiert (nur Text).`);
+}
+async function importQuestionsCsv(file){
+  let rows;
+  try{rows=parseCsv(decodeText(await file.arrayBuffer()))}catch(e){alert('Die Datei konnte nicht gelesen werden: '+e.message);return}
+  if(!rows.length){alert('Die Datei ist leer.');return}
+  const norm=x=>x.toLowerCase().replace(/ö/g,'oe').replace(/[^a-z]/g,'');
+  const h=rows[0].map(norm);
+  const find=(...names)=>h.findIndex(x=>names.includes(x));
+  let col={runde:find('runde','rundennr','rundennummer','round'),rname:find('rundenname','namederrunde','rundentitel','roundname'),
+    nr:find('nr','nummer','fragenummer','fragenr','no'),frage:find('frage','fragetext','text','question'),
+    loesung:find('loesung','antwort','loesungen','answer'),timer:find('timer','zeit','dauer','sekunden')};
+  const hasHeader=col.frage>=0||col.loesung>=0;
+  if(hasHeader)rows=rows.slice(1);
+  else{const w=Math.max(...rows.map(r=>r.length));
+    col=w>=6?{runde:0,rname:1,nr:2,frage:3,loesung:4,timer:5}:w>=3?{runde:-1,rname:-1,nr:0,frage:1,loesung:2,timer:-1}:{runde:-1,rname:-1,nr:-1,frage:0,loesung:1,timer:-1};}
+  const get=(r,i)=>i>=0?String(r[i]??'').replace(/\r\n?/g,'\n').trim():'';
+  const sel=qRound();const items=[];let badTimer=0;
+  for(const r of rows){const text=get(r,col.frage),answer=get(r,col.loesung);if(!text&&!answer)continue;
+    const rn=parseInt((get(r,col.runde).match(/\d+/)||[])[0],10);
+    const round=Number.isFinite(rn)&&rn>=1?rn-1:sel;
+    let timer=null;const tv=get(r,col.timer);if(tv){timer=parseDur(tv);if(timer==null)badTimer++}
+    items.push({round,rname:get(r,col.rname),nr:get(r,col.nr),text,answer,timer});}
+  if(!items.length){alert('In der Datei wurden keine Fragen gefunden. Erwartet wird eine Spalte „Frage“ und/oder „Lösung“.');return}
+  const maxR=Math.max(...items.map(x=>x.round));
+  if(maxR>=S.settings.numRounds){if(!confirm(`Die Liste enthält Fragen für Runde ${maxR+1}, eingestellt sind ${S.settings.numRounds} Runden.\nRundenanzahl auf ${maxR+1} erhöhen?`))return;
+    S.settings.numRounds=maxR+1;ensureRounds(S)}
+  const targets=[...new Set(items.map(x=>x.round))].sort((a,b)=>a-b);
+  const where=targets.length===1?`in ${roundName(targets[0])}`:`in ${targets.length} Runden (${targets.map(r=>r+1).join(', ')})`;
+  const total=items.length;
+  const existing=targets.reduce((a,r)=>a+qs(r).length,0);
+  const withMedia=targets.reduce((a,r)=>a+qs(r).filter(q=>q.media).length,0);
+  let replace=false;
+  if(existing)replace=confirm(`${total} ${total===1?'Frage':'Fragen'} ${where} importieren.\n\nOK = vorhandene ${existing} ${existing===1?'Frage':'Fragen'} dieser Runde(n) ERSETZEN${withMedia?` (dabei gehen ${withMedia} Bilder/Videos verloren)`:''}\nAbbrechen = Fragen ANHÄNGEN`);
+  else if(!confirm(`${total} ${total===1?'Frage':'Fragen'} ${where} importieren?`))return;
+  if(replace)targets.forEach(r=>{qs(r).forEach(q=>q.media&&delMedia(q.media.id));S.rounds[r].questions=[]});
+  for(const it of items){const round=S.rounds[it.round];
+    if(it.rname&&(replace||isDefaultName(it.round)))round.name=it.rname;
+    round.questions.push(...normQuestions([{id:newId(),nr:it.nr,text:it.text,answer:it.answer,timer:it.timer,media:null}]))}
+  save();renderRoundSel();renderQuestions();
+  toast(`${total} ${total===1?'Frage':'Fragen'} aus der Fragenliste importiert.`+(badTimer?` ⚠ ${badTimer} ungültige Timer-Werte wurden ignoriert.`:''),5000);
+}
+
 async function importQuestions(file){
   let man,dataStart;
   try{
     const head=new TextDecoder().decode(await file.slice(0,64).arrayBuffer());
-    const m=head.match(/^WIRPQZ1\n(\d+)\n/);if(!m)throw new Error('Das ist keine Fragen-Datei (.pqz) dieses Pub Quiz.');
+    const m=head.match(/^WIRPQZ1\n(\d+)\n/);if(!m)throw new Error('Das ist kein Fragenpaket (.pqz) dieses Pub Quiz. Für CSV-Dateien bitte „Fragenliste importieren“ verwenden.');
     const hl=m[0].length,ml=+m[1];dataStart=hl+ml;
     man=JSON.parse(new TextDecoder().decode(await file.slice(hl,hl+ml).arrayBuffer()));
     if(!man||man.app!=='wir-pubquiz-fragen'||!Array.isArray(man.rounds))throw new Error('Ungültiger Dateiinhalt.');
@@ -1399,6 +1460,10 @@ if(!IS_BEAMER){
   $('#qExpAll').onclick=()=>exportQuestions(S.rounds.map((_,i)=>i).filter(i=>qs(i).length));
   $('#qImpBtn').onclick=()=>$('#qImp').click();
   $('#qImp').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)importQuestions(f)};
+  $('#qCsvRound').onclick=()=>exportQuestionsCsv([qRound()]);
+  $('#qCsvAll').onclick=()=>exportQuestionsCsv(S.rounds.map((_,i)=>i).filter(i=>qs(i).length));
+  $('#qCsvImpBtn').onclick=()=>$('#qCsvImp').click();
+  $('#qCsvImp').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)importQuestionsCsv(f)};
   $('#qRoundSel').onchange=renderQuestions;
   $('#addQ').onclick=()=>{const r=qRound();S.rounds[r].questions.push({id:newId(),text:'',answer:'',media:null,timer:null,nr:''});save();renderQuestions();
     const t=$$('#qList .qtext').pop();t&&t.focus()};

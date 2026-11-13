@@ -18,7 +18,9 @@ Die App besteht aus einer einzigen HTML-Datei (`PubQuiz.html`), die komplett off
 - **Team-Vorstellung** am Beamer (Tab „Teams“): alle Teams als Neon-Karten mit Emoji und Name. Entweder **einzeln per Klick** aufdecken (das gerade vorgestellte Team leuchtet gold) oder **alle auf einmal** zeigen.
 - **Punkte** pro Runde eingeben (ganze Zahlen ≥ 0), mit Rundenname (Standard „Runde X“). Die Rundenanzahl ist einstellbar (Standard 4).
 - **Fragen** pro Runde (Tab „❓ Fragen“): Fragenummer (frei wählbar, z. B. `7` oder `2a`; leer = automatisch), Text, Bild oder Video (per Klick oder Drag & Drop), Lösung und optional eine eigene Timer-Dauer. Ablauf am Beamer: Rundentitel → mit *Weiter* durch die Fragen. In der Steuerung lassen sich Runde **und Fragenummer** wählen, um direkt bei einer bestimmten Frage (oder deren Auflösung) einzusteigen. Videos laufen auf Wunsch automatisch und lassen sich mit ▶/⏸/⟲ steuern.
-- **Fragen exportieren und importieren** (Tab „❓ Fragen“, unten): eine Runde oder alle Runden als `.pqz`-Datei, **inklusive Bilder und Videos**. So lassen sich Fragen auf einem anderen Gerät vorbereiten und auf den Quiz-Laptop übertragen. Beim Import wird gefragt, ob vorhandene Fragen ersetzt oder die neuen angehängt werden. Eine einzelne Runde wird in die oben gewählte Runde importiert, ein Export aller Runden in die jeweils gleichen Runden.
+- **Fragen exportieren und importieren** (Tab „❓ Fragen“, unten), jeweils für eine Runde oder alle Runden. Beim Import wird gefragt, ob vorhandene Fragen ersetzt oder die neuen angehängt werden.
+  - **Fragenpaket** (`.pqz`): alles **inklusive Bilder und Videos**, zum Übertragen auf ein anderes Gerät. Eine einzelne Runde wird in die oben gewählte Runde importiert, ein Export aller Runden in die jeweils gleichen Runden.
+  - **Fragenliste** (`.csv`): **nur Text**, z. B. um Fragen in Excel zu schreiben oder zu bearbeiten. Spalten `Runde;Rundenname;Nr;Frage;Lösung;Timer`; Pflicht ist nur „Frage“ oder „Lösung“. Ohne Spalte „Runde“ landen die Fragen in der oben gewählten Runde. Siehe `Beispiel-Fragenliste.csv`.
 - **Auflösung** (eigener Button ✅ pro Runde): pro Frage zuerst die Frage, mit dem nächsten Klick die Lösung.
 - **Zwischenstand**: Titelbild → alle Plätze ab 6 auf einmal → Countdown von Platz 5 bis 1, jeweils mit Trommelwirbel. Bei Gleichstand teilen sich die Teams den Platz.
 - **Endstand**: Die Plätze 1–3 müssen eindeutig sein. Bei Gleichstand fordert die App ein Stechen, in dem die Moderation die Reihenfolge festlegt. Der Sieger wird mit Konfetti und „We are the Champions“ aufgedeckt, danach folgt die komplette Endtabelle.
@@ -31,6 +33,7 @@ Die App besteht aus einer einzigen HTML-Datei (`PubQuiz.html`), die komplett off
 ```
 PubQuiz.html          fertige App (gebaut, diese Datei verwenden)
 Beispiel-Teams.csv    Beispiel für den Team-Import
+Beispiel-Fragenliste.csv  Vorlage für die Fragenliste (CSV, z. B. für Excel)
 src/src.html          Quelltext (HTML/CSS/JS) mit Platzhaltern {{FONTS}} und {{LOGO}}
 src/build.py          bettet Schriften und Logo ein und erzeugt PubQuiz.html
 src/assets/           Logo und Schriften (Montserrat, Nunito – SIL Open Font License)
@@ -44,6 +47,6 @@ python3 src/build.py
 
 ## Hinweise
 
-- Bilder und Videos der Fragen werden im Browser gespeichert (IndexedDB). Das JSON-Backup enthält nur Texte, Lösungen und Timer-Werte. Zum Übertragen der Fragen samt Medien den Fragen-Export (`.pqz`) verwenden.
+- Bilder und Videos der Fragen werden im Browser gespeichert (IndexedDB). Das JSON-Backup enthält nur Texte, Lösungen und Timer-Werte. Zum Übertragen der Fragen samt Medien das Fragenpaket (`.pqz`) verwenden.
 - Audiodateien werden nicht mitgeliefert (Urheberrecht) und auch nicht ins Backup exportiert. Sie bleiben aber im Browser gespeichert.
 - Für öffentliche Musikwiedergabe ist in Österreich in der Regel die AKM zuständig.
