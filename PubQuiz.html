@@ -218,7 +218,8 @@ body.beamer.nocursor{cursor:none}
 .qbody{display:flex;flex-direction:column;gap:6px;min-width:0}
 textarea.inp{resize:vertical;min-height:56px;font-size:16px;line-height:1.3}
 .qrow{display:flex;gap:6px}
-.qrow .qtim{width:130px;flex:none;text-align:center}
+.qrow .qtim{width:110px;flex:none;text-align:center}
+.qrow .qnr{width:74px;flex:none;text-align:center;font-weight:800}
 .qmedia{height:118px;border:2px dashed rgba(143,250,255,.35);border-radius:10px;display:grid;place-items:center;text-align:center;font-size:13px;
   color:var(--muted);cursor:pointer;position:relative;overflow:hidden;background:#140d4a;padding:4px}
 .qmedia.drag{border-color:var(--pink);background:#2b1150}
@@ -588,7 +589,7 @@ function applyVid(o){
 function qLayerHTML(vm,isAns){
   const t=(vm.text||'').trim(),hasM=!!vm.media,len=glen(t);
   const fs=hasM?(len<45?84:len<90?68:len<160?54:44):(len<40?128:len<80?104:len<150?84:len<260?66:52);
-  const txt=t||(hasM?'':`Frage ${vm.qn}`);
+  const txt=t||(hasM?'':`Frage ${vm.ql||vm.qn}`);
   let h=`<div class="hdr"><div class="k n-pink">${esc(vm.kicker)}</div></div><div class="qwrap ${hasM?'hasm':'nom'}">`;
   if(txt)h+=`<div class="qt n-white" style="font-size:${fs}px">${esc(txt)}</div>`;
   if(hasM)h+=`<div class="qm">${vm.media.type==='video'?`<video data-mid="${esc(vm.media.id)}" playsinline preload="auto"></video>`:`<img data-mid="${esc(vm.media.id)}" alt="">`}</div>`;
@@ -750,7 +751,9 @@ function normalize(s){
 }
 function normQuestions(a){return(Array.isArray(a)?a:[]).filter(q=>q&&typeof q==='object').map(q=>({id:String(q.id||newId()),text:String(q.text??''),answer:String(q.answer??''),
   media:q.media&&q.media.id?{id:String(q.media.id),type:q.media.type==='video'?'video':'image',name:String(q.media.name||'')}:null,
-  timer:Number.isFinite(+q.timer)&&+q.timer>0?Math.min(5999,Math.round(+q.timer)):null}))}
+  timer:Number.isFinite(+q.timer)&&+q.timer>0?Math.min(5999,Math.round(+q.timer)):null,nr:String(q.nr??'').trim().slice(0,12)}))}
+const qLabel=(r,i)=>{const q=qs(r)[i];return(q&&q.nr)||String(i+1)};
+const qKick=(r,i)=>{const q=qs(r)[i];return q&&q.nr?`Frage ${q.nr}`:`Frage ${i+1} / ${qs(r).length}`};
 function ensureRounds(s){
   const n=s.settings.numRounds;
   while(s.rounds.length<n)s.rounds.push({name:`Runde ${s.rounds.length+1}`,scores:{},questions:[]});
@@ -811,13 +814,13 @@ function buildVM(){
   if(p.screen==='q'&&p.round<st.numRounds){const list=qs(p.round),n=list.length;
     if(!n)return{...base,screen:'round',key:'round|'+p.round+'|'+roundName(p.round)+'|'+st.numRounds,idx:p.round,n:st.numRounds,name:roundName(p.round)};
     const qi=Math.max(0,Math.min(n-1,p.idx|0)),q=list[qi];
-    return{...base,screen:'q',key:'q|'+q.id+'|'+hashStr(q.text+'|'+(q.media?q.media.id:'')),qn:qi+1,
-      kicker:`${roundName(p.round)} · Frage ${qi+1} / ${n}`,text:q.text,media:q.media?{id:q.media.id,type:q.media.type}:null,vid:p.vid||null}}
+    return{...base,screen:'q',key:'q|'+q.id+'|'+hashStr(q.text+'|'+(q.media?q.media.id:'')+'|'+q.nr),qn:qi+1,ql:qLabel(p.round,qi),
+      kicker:`${roundName(p.round)} · ${qKick(p.round,qi)}`,text:q.text,media:q.media?{id:q.media.id,type:q.media.type}:null,vid:p.vid||null}}
   if(p.screen==='ans'&&p.round<st.numRounds){const list=qs(p.round);
     if(!p.step||!list.length)return{...base,screen:'ans',title:true,key:'anst|'+p.round+'|'+roundName(p.round),name:roundName(p.round)};
     const qi=Math.min(list.length-1,Math.floor((p.step-1)/2)),q=list[qi];
-    return{...base,screen:'ans',key:'ans|'+q.id+'|'+hashStr(q.text+'|'+q.answer+'|'+(q.media?q.media.id:'')),qn:qi+1,
-      kicker:`Auflösung · ${roundName(p.round)} · Frage ${qi+1} / ${list.length}`,text:q.text,answer:q.answer,
+    return{...base,screen:'ans',key:'ans|'+q.id+'|'+hashStr(q.text+'|'+q.answer+'|'+(q.media?q.media.id:'')+'|'+q.nr),qn:qi+1,ql:qLabel(p.round,qi),
+      kicker:`Auflösung · ${roundName(p.round)} · ${qKick(p.round,qi)}`,text:q.text,answer:q.answer,
       media:q.media?{id:q.media.id,type:q.media.type}:null,revealed:(p.step-1)%2===1,vid:p.vid||null}}
   if(p.screen==='round'&&p.round<st.numRounds){const i=p.round;
     return{...base,screen:'round',key:'round|'+i+'|'+roundName(i)+'|'+st.numRounds,idx:i,n:st.numRounds,name:roundName(i)}}
@@ -955,10 +958,10 @@ function updateControl(){
   const vm=curVM;let now='',nx='—';
   if(vm.screen==='start')now='Startbild';
   else if(vm.screen==='round'){now=`Rundentitel: <b>${esc(vm.name)}</b>`;const n=qs(S.pres.round).length;nx=n?'Frage 1':'— (keine Fragen angelegt)'}
-  else if(vm.screen==='q'){const n=qs(S.pres.round).length;now=`<b>${esc(vm.kicker)}</b>`;nx=vm.qn<n?`Frage ${vm.qn+1}`:'— (letzte Frage, danach ✅ Auflösung oder 📊 Wertung)'}
+  else if(vm.screen==='q'){const n=qs(S.pres.round).length;now=`<b>${esc(vm.kicker)}</b>`;nx=vm.qn<n?`Frage ${esc(qLabel(S.pres.round,vm.qn))}`:'— (letzte Frage, danach ✅ Auflösung oder 📊 Wertung)'}
   else if(vm.screen==='ans'){const n=qs(S.pres.round).length,st=S.pres.step;
     if(vm.title){now=`<b>Auflösung ${esc(vm.name)}</b> · Titel`;nx='Frage 1 zeigen'}
-    else{now=`<b>${esc(vm.kicker)}</b> · ${vm.revealed?'Lösung sichtbar':'Frage'}`;nx=!vm.revealed?'Lösung aufdecken':(vm.qn<n?`Frage ${vm.qn+1} zeigen`:'— (Auflösung fertig)')}}
+    else{now=`<b>${esc(vm.kicker)}</b> · ${vm.revealed?'Lösung sichtbar':'Frage'}`;nx=!vm.revealed?'Lösung aufdecken':(vm.qn<n?`Frage ${esc(qLabel(S.pres.round,vm.qn))} zeigen`:'— (Auflösung fertig)')}}
   else{const s=vm.steps[vm.step];const L=x=>{const v=stepLabel(x,vm);return typeof v==='function'?v():v};
     now=`<b>${esc(vm.final?'Endstand':'Zwischenstand '+vm.short)}</b> · ${esc(L(s))}${vm.suspense?' <span style="color:var(--pink2)">(Trommelwirbel …)</span>':''}`;
     nx=vm.step<vm.steps.length-1?esc(L(vm.steps[vm.step+1])):'— (Ende der Wertung)';}
@@ -1091,10 +1094,10 @@ function renderRoundSel(){const sel=$('#roundSel');const v=sel.value;
   if(v!==''&&+v<S.rounds.length)sel.value=v;renderQNumSel();}
 let qNumSig='';
 function renderQNumSel(force){const sel=$('#qNumSel');const r=+$('#roundSel').value||0;const list=qs(r);
-  const sig=r+'|'+list.map(q=>q.id+q.text).join('|');if(sig===qNumSig&&!force)return;qNumSig=sig;
+  const sig=r+'|'+list.map(q=>q.id+q.text+'#'+q.nr).join('|');if(sig===qNumSig&&!force)return;qNumSig=sig;
   const v=sel.value;
   sel.innerHTML=list.length?list.map((q,i)=>{const t=(q.text||'').replace(/\s+/g,' ').trim();const lbl=t?(t.length>28?t.slice(0,27)+'…':t):(q.media?(q.media.type==='video'?'🎬 Video':'🖼 Bild'):'');
-      return `<option value="${i}">Frage ${i+1}${lbl?' – '+esc(lbl):''}</option>`}).join(''):'<option value="0">keine Fragen</option>';
+      return `<option value="${i}">Frage ${esc(q.nr||String(i+1))}${lbl?' – '+esc(lbl):''}</option>`}).join(''):'<option value="0">keine Fragen</option>';
   sel.disabled=!list.length;sel.value=(v!==''&&+v<list.length)?v:'0';}
 const qNumPicked=()=>Math.max(0,+$('#qNumSel').value||0);
 
@@ -1109,9 +1112,9 @@ function renderQuestions(){
   $('#qCount').textContent=`${list.length} ${list.length===1?'Frage':'Fragen'}`;
   $('#vidAuto').checked=!!S.settings.videoAuto;
   $('#qList').innerHTML=list.map((q,i)=>`<div class="qitem" data-i="${i}">
-    <div class="qnum">${i+1}</div>
+    <div class="qnum" data-i="${i}">${esc(q.nr||String(i+1))}</div>
     <div class="qbody"><textarea class="inp qtext" data-i="${i}" rows="2" placeholder="Fragetext (kann leer bleiben, wenn Bild/Video für sich spricht)">${esc(q.text)}</textarea>
-      <div class="qrow"><input class="inp qans" data-i="${i}" value="${esc(q.answer)}" placeholder="Lösung (für die Auflösung)">
+      <div class="qrow"><input class="inp qnr" data-i="${i}" value="${esc(q.nr)}" placeholder="Nr. ${i+1}" maxlength="12" title="Fragenummer (leer = automatisch ${i+1})"><input class="inp qans" data-i="${i}" value="${esc(q.answer)}" placeholder="Lösung (für die Auflösung)">
       <input class="inp qtim" data-i="${i}" value="${q.timer?fmtTime(q.timer*1000):''}" placeholder="Timer" title="Eigene Timer-Dauer für diese Frage (leer = aktuelle Einstellung)"></div></div>
     <div class="qmedia ${q.media?'has':''}" data-i="${i}" title="Bild oder Video wählen oder hierher ziehen">
       ${q.media?`${q.media.type==='video'?`<video data-tmid="${esc(q.media.id)}" muted preload="metadata"></video>`:`<img data-tmid="${esc(q.media.id)}" alt="">`}
@@ -1281,12 +1284,13 @@ if(!IS_BEAMER){
 
   // Fragen
   $('#qRoundSel').onchange=renderQuestions;
-  $('#addQ').onclick=()=>{const r=qRound();S.rounds[r].questions.push({id:newId(),text:'',answer:'',media:null,timer:null});save();renderQuestions();
+  $('#addQ').onclick=()=>{const r=qRound();S.rounds[r].questions.push({id:newId(),text:'',answer:'',media:null,timer:null,nr:''});save();renderQuestions();
     const t=$$('#qList .qtext').pop();t&&t.focus()};
   $('#vidAuto').onchange=e=>{S.settings.videoAuto=e.target.checked;save()};
   const ql=$('#qList');
   ql.addEventListener('input',e=>{const t=e.target,i=+t.dataset.i,q=qs(qRound())[i];if(!q)return;
-    if(t.classList.contains('qtext'))q.text=t.value;else if(t.classList.contains('qans'))q.answer=t.value;else return;save()});
+    if(t.classList.contains('qtext'))q.text=t.value;else if(t.classList.contains('qans'))q.answer=t.value;
+    else if(t.classList.contains('qnr')){q.nr=t.value.trim();const n=$(`#qList .qnum[data-i="${i}"]`);if(n)n.textContent=q.nr||String(i+1)}else return;save()});
   ql.addEventListener('change',e=>{const t=e.target;if(!t.classList.contains('qtim'))return;const q=qs(qRound())[+t.dataset.i];if(!q)return;
     if(!t.value.trim()){q.timer=null;save();return}const v=parseDur(t.value);
     if(v==null){toast('Ungültige Timer-Dauer. Beispiele: 45 oder 1:30');t.value=q.timer?fmtTime(q.timer*1000):'';return}
