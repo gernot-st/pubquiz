@@ -278,9 +278,9 @@ td.acts{white-space:nowrap;width:1%}
 td.acts button{border:0;background:#2d2190;border-radius:7px;padding:5px 8px;cursor:pointer;margin-left:2px}
 td.acts button.del:hover{background:#7a1838}
 .scorewrap{overflow:auto;max-height:calc(100vh - 230px)}
-table.scores td.tm{white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;font-weight:800}
+table.scores td.tm{white-space:nowrap;max-width:210px;overflow:hidden;text-overflow:ellipsis;font-weight:800}
 table.scores td.tm .em{font-family:var(--emoji);font-size:20px;margin-right:4px}
-table.scores th.rc{min-width:96px}
+table.scores th.rc{min-width:92px}
 table.scores .rname{font-weight:800;margin-bottom:5px}
 table.scores .rbtns{display:flex;gap:4px}
 table.scores .rbtns button{flex:1;border:1px solid rgba(255,255,255,.18);border-radius:7px;background:#3a2b9a;font-size:12px;padding:4px 4px;cursor:pointer;font-weight:800;white-space:nowrap}
@@ -1082,16 +1082,16 @@ async function importCsvFile(file){
 /* ---------- Punkte ---------- */
 function renderScores(){
   const n=S.settings.numRounds;
-  let h='<thead><tr><th>Team</th>';
+  let h='<thead><tr><th>#</th><th>Team</th>';
   for(let r=0;r<n;r++)h+=`<th class="rc"><input class="inp rname" data-r="${r}" value="${esc(S.rounds[r].name)}" placeholder="Runde ${r+1}" aria-label="Name Runde ${r+1}">
     <div class="rbtns"><button data-act="rtitle" data-r="${r}" title="Rundentitel auf dem Beamer zeigen">🎬</button><button data-act="rans" data-r="${r}" title="Auflösung dieser Runde zeigen">✅</button>
     <button data-act="rstand" data-r="${r}" title="${r===n-1?'Endstand':'Zwischenstand'} auf dem Beamer zeigen" class="${r===n-1?'final':''}">${r===n-1?'🏆 Ende':'📊 Stand'}</button></div></th>`;
   h+='<th style="text-align:right">Gesamt</th><th style="text-align:right">Platz</th></tr></thead><tbody>';
-  S.teams.forEach((t,ti)=>{h+=`<tr><td class="tm"><span class="em">${esc(t.emoji)}</span>${esc(t.name||'(ohne Namen)')}</td>`;
+  S.teams.forEach((t,ti)=>{h+=`<tr><td class="num">${ti+1}</td><td class="tm"><span class="em">${esc(t.emoji)}</span>${esc(t.name||'(ohne Namen)')}</td>`;
     for(let r=0;r<n;r++){const v=scoreOf(r,t.id);h+=`<td><input class="inp sc" inputmode="numeric" autocomplete="off" data-r="${r}" data-t="${ti}" value="${v??''}" aria-label="${esc(t.name)} ${esc(roundName(r))}"></td>`}
     h+=`<td class="tot" data-t="${ti}"></td><td class="plc" data-t="${ti}"></td></tr>`;});
-  if(!S.teams.length)h+=`<tr><td colspan="${n+3}" class="muted" style="padding:20px;text-align:center">Bitte zuerst Teams anlegen.</td></tr>`;
-  h+='</tbody><tfoot><tr><td></td>'+Array.from({length:n},(_,r)=>`<td data-foot="${r}"></td>`).join('')+'<td></td><td></td></tr></tfoot>';
+  if(!S.teams.length)h+=`<tr><td colspan="${n+4}" class="muted" style="padding:20px;text-align:center">Bitte zuerst Teams anlegen.</td></tr>`;
+  h+='</tbody><tfoot><tr><td></td><td></td>'+Array.from({length:n},(_,r)=>`<td data-foot="${r}"></td>`).join('')+'<td></td><td></td></tr></tfoot>';
   $('#scoreTable').innerHTML=h;updateTotals();
 }
 function updateTotals(){
