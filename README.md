@@ -16,7 +16,7 @@ Die App besteht aus einer einzigen HTML-Datei (`PubQuiz.html`), die komplett off
 
 - **Teams** mit Name und Emoji anlegen, sortieren und löschen. CSV-Import und -Export (`Teamname;Emoji`, UTF-8 mit BOM, Excel-kompatibel). Der Import erkennt außerdem Komma und Tab als Trennzeichen sowie Windows-1252-Kodierung.
 - **Punkte** pro Runde eingeben (ganze Zahlen ≥ 0), mit Rundenname (Standard „Runde X“). Die Rundenanzahl ist einstellbar (Standard 4).
-- **Fragen** pro Runde (Tab „❓ Fragen“): Text, Bild oder Video (per Klick oder Drag & Drop), Lösung und optional eine eigene Timer-Dauer. Ablauf am Beamer: Rundentitel → mit *Weiter* durch die Fragen → „Antwortzettel abgeben“. Videos laufen auf Wunsch automatisch und lassen sich mit ▶/⏸/⟲ steuern.
+- **Fragen** pro Runde (Tab „❓ Fragen“): Text, Bild oder Video (per Klick oder Drag & Drop), Lösung und optional eine eigene Timer-Dauer. Ablauf am Beamer: Rundentitel → mit *Weiter* durch die Fragen. In der Steuerung lassen sich Runde **und Fragenummer** wählen, um direkt bei einer bestimmten Frage (oder deren Auflösung) einzusteigen. Videos laufen auf Wunsch automatisch und lassen sich mit ▶/⏸/⟲ steuern.
 - **Auflösung** (eigener Button ✅ pro Runde): pro Frage zuerst die Frage, mit dem nächsten Klick die Lösung.
 - **Zwischenstand**: Titelbild → alle Plätze ab 6 auf einmal → Countdown von Platz 5 bis 1, jeweils mit Trommelwirbel. Bei Gleichstand teilen sich die Teams den Platz.
 - **Endstand**: Die Plätze 1–3 müssen eindeutig sein. Bei Gleichstand fordert die App ein Stechen, in dem die Moderation die Reihenfolge festlegt. Der Sieger wird mit Konfetti und „We are the Champions“ aufgedeckt, danach folgt die komplette Endtabelle.
