@@ -27,6 +27,7 @@ Die App besteht aus einer einzigen HTML-Datei (`PubQuiz.html`), die komplett off
 - **Steuerung**: Leertaste, →, Bild↓ oder ein Presenter schalten weiter, ←/Bild↑ zurück. Das funktioniert auch, wenn das Beamer-Fenster den Fokus hat. In der Moderationsansicht gibt es eine Live-Vorschau des Beamers.
 - **Timer** für jede Frage: Die Dauer ist frei einstellbar (z. B. `45` oder `1:30`), dazu gibt es Schnellwahl-Knöpfe. Start (beginnt immer von vorne), Pause/Weiter, +10 s, Reset, Ein- und Ausblenden. Der Timer erscheint als Neon-Ring über dem aktuellen Beamer-Bild, klein in der Ecke oder groß in der Mitte. In den letzten 10 Sekunden färbt er sich pink, bei Ablauf erscheint „ZEIT!“. Optional startet der Timer bei jeder neuen Frage automatisch. Außerdem gibt es optional einen Signalton und ein Ticken in den letzten 5 Sekunden (vom Browser erzeugt, keine Datei nötig). Taste **T** = Start/Pause.
 - **Sicherung**: Der Spielstand wird automatisch im Browser gespeichert. Zusätzlich gibt es einen JSON-Backup-Export und -Import.
+- **Löschen**: „🗑 Alle Teams löschen“ (Tab Teams, löscht auch die Punkte), „🗑 Runde leeren“ und „🗑 Alle Fragen“ (Tab Fragen, inkl. Bilder/Videos). Zusätzlich unter Einstellungen → Zurücksetzen. Jeweils mit Sicherheitsabfrage.
 
 ## Projektstruktur
 

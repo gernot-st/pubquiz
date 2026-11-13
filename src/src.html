@@ -364,6 +364,8 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
             <span class="muted" style="font-weight:800">Am Beamer vorstellen:</span>
             <button class="btn pink" id="presTeams" title="Jedes Team einzeln per Klick (Weiter / Leertaste) aufdecken">📺 Einzeln per Klick</button>
             <button class="btn" id="presTeamsAll" title="Alle Teams sofort als Übersicht zeigen">Alle auf einmal</button>
+            <span style="flex:1"></span>
+            <button class="btn danger" data-del="teams" title="Alle Teams samt ihren Punkten löschen">🗑 Alle Teams löschen</button>
           </div>
           <table class="grid" id="teamTable"></table>
           <div class="hint">Emoji einfügen: Windows <span class="kbd">Win</span> + <span class="kbd">.</span> · Mac <span class="kbd">Ctrl</span> + <span class="kbd">Cmd</span> + <span class="kbd">Leertaste</span>.
@@ -387,9 +389,12 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
         <div class="card-ui">
           <h2>Fragen</h2>
           <div class="toolbar">
-            <select class="inp" id="qRoundSel" style="max-width:280px"></select>
+            <select class="inp" id="qRoundSel" style="max-width:250px"></select>
             <button class="btn cyan" id="addQ">＋ Frage hinzufügen</button>
             <span class="muted" id="qCount"></span>
+            <span style="flex:1"></span>
+            <button class="btn danger" data-del="qround" title="Alle Fragen der oben gewählten Runde löschen">🗑 Runde leeren</button>
+            <button class="btn danger" data-del="qall" title="Alle Fragen aller Runden löschen">🗑 Alle Fragen</button>
           </div>
           <div id="qList"></div>
           <input type="file" id="qFile" accept="image/*,video/*" hidden>
@@ -478,6 +483,8 @@ aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:au
           <h3>Zurücksetzen</h3>
           <div class="toolbar">
             <button class="btn danger" id="resetScores">Alle Punkte löschen</button>
+            <button class="btn danger" data-del="teams">Alle Teams löschen</button>
+            <button class="btn danger" data-del="qall">Alle Fragen löschen</button>
             <button class="btn danger" id="resetAll">Alles zurücksetzen</button>
           </div>
         </div>
@@ -1420,6 +1427,26 @@ if(!IS_BEAMER){
       if(!confirm(`Backup mit ${s.teams.length} Teams laden? Der aktuelle Stand wird ersetzt.`))return;
       cancelSuspense();S=normalize(s);S.pres={screen:'start'};save();switchTab(curTab);renderRoundSel();toast('Backup geladen.')}
     catch(err){alert('Backup konnte nicht geladen werden: '+err.message)}};
+  const delQuestions=rounds=>{
+    const n=rounds.reduce((a,r)=>a+qs(r).length,0);
+    if(!n){toast('Keine Fragen vorhanden.');return}
+    const media=rounds.reduce((a,r)=>a+qs(r).filter(q=>q.media).length,0);
+    const where=rounds.length===1?`in ${roundName(rounds[0])}`:'in ALLEN Runden';
+    if(!confirm(`Wirklich ${n===1?'die 1 Frage':`alle ${n} Fragen`} ${where} löschen?${media?`\nDabei werden auch ${media} Bilder/Videos gelöscht.`:''}\n\nTipp: vorher als Fragenpaket exportieren.\nDas kann nicht rückgängig gemacht werden.`))return;
+    rounds.forEach(r=>{qs(r).forEach(q=>q.media&&delMedia(q.media.id));S.rounds[r].questions=[]});
+    if((S.pres.screen==='q'||S.pres.screen==='ans')&&rounds.includes(S.pres.round)){cancelSuspense();S.pres={screen:'start'}}
+    save();renderRoundSel();if(curTab==='questions')renderQuestions();toast(`${n} ${n===1?'Frage':'Fragen'} gelöscht.`)};
+  const delTeams=()=>{
+    const n=S.teams.length;if(!n){toast('Keine Teams vorhanden.');return}
+    const scored=S.rounds.some(r=>Object.keys(r.scores).length);
+    if(!confirm(`Wirklich alle ${n} Teams löschen?${scored?'\nDabei werden auch alle eingetragenen Punkte gelöscht.':''}\n\nTipp: vorher die Teams als CSV exportieren.\nDas kann nicht rückgängig gemacht werden.`))return;
+    S.teams=[];S.rounds.forEach(r=>r.scores={});S.tbOrder={};S.tbSig=null;
+    if(['teams','standings'].includes(S.pres.screen)){cancelSuspense();S.pres={screen:'start'}}
+    save();switchTab(curTab);toast(`${n} Teams gelöscht.`)};
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;
+    if(b.dataset.del==='teams')delTeams();
+    else if(b.dataset.del==='qround')delQuestions([qRound()]);
+    else if(b.dataset.del==='qall')delQuestions(S.rounds.map((_,i)=>i))});
   $('#resetScores').onclick=()=>{if(!confirm('Wirklich ALLE Punkte löschen? Teams und Einstellungen bleiben erhalten.'))return;
     cancelSuspense();S.rounds.forEach(r=>r.scores={});S.tbOrder={};S.tbSig=null;S.pres={screen:'start'};save();toast('Punkte gelöscht.')};
   $('#resetAll').onclick=()=>{if(!confirm('Wirklich ALLES zurücksetzen (Teams, Punkte, Rundennamen, Einstellungen)?\nTipp: vorher ein Backup exportieren.'))return;
