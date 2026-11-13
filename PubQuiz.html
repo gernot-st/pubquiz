@@ -149,6 +149,30 @@ button,input,select{font:inherit;color:inherit}
   background:rgba(40,20,110,.7);border:3px solid rgba(143,250,255,.7);box-shadow:0 0 12px rgba(63,240,255,.5)}
 .l-champ .trophy{font-size:120px;position:absolute;top:80px;animation:bob 1.4s ease-in-out infinite alternate}
 
+/* --- Timer (Overlay) --- */
+.stage .layers{transition:filter .5s}
+.stage.tbig .layers{filter:blur(6px) brightness(.4)}
+.tmr{position:absolute;right:60px;top:135px;width:1em;height:1em;font-size:330px;z-index:20;opacity:0;transform:scale(.5);pointer-events:none;
+  transition:opacity .4s,transform .5s cubic-bezier(.2,1.4,.4,1),font-size .5s ease,right .5s ease,top .5s ease}
+.tmr.on{opacity:1;transform:none}
+.tmr.big{font-size:760px;right:580px;top:160px}
+.tmr svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.tmr .bgc{fill:rgba(18,10,70,.9)}
+.tmr .trk{fill:none;stroke:rgba(255,255,255,.12);stroke-width:12}
+.tmr .arc{fill:none;stroke:#8ffaff;stroke-width:12;stroke-linecap:round;stroke-dasharray:552.92;
+  filter:drop-shadow(0 0 4px #3ff0ff) drop-shadow(0 0 12px #19d9ff);transition:stroke .3s}
+.tmr .tv,.tmr .tz{position:absolute;inset:0;display:grid;place-items:center;font-family:Montserrat,sans-serif;font-weight:900;line-height:1}
+.tmr .tv{font-size:.27em;color:#fff;text-shadow:0 0 .03em #fff,0 0 .12em #3ff0ff}
+.tmr .tz{font-size:.2em;opacity:0}
+.tmr.warn .arc{stroke:#ffb3f1;filter:drop-shadow(0 0 4px #ff2fd0) drop-shadow(0 0 14px #ff2fd0)}
+.tmr.warn .tv{text-shadow:0 0 .03em #fff,0 0 .14em #ff2fd0;animation:tbeat 1s infinite}
+.tmr.paused .tv{opacity:.5}
+.tmr.done .tv{opacity:0}
+.tmr.done .tz{opacity:1;animation:tflash .45s infinite alternate}
+.tmr.done .trk{stroke:#ff6be6;filter:drop-shadow(0 0 8px #ff2fd0) drop-shadow(0 0 20px #ff2fd0)}
+@keyframes tbeat{0%,30%,100%{transform:scale(1)}15%{transform:scale(1.08)}}
+@keyframes tflash{from{color:#fff;text-shadow:0 0 .05em #ff2fd0,0 0 .18em #ff2fd0}to{color:#fff3b0;text-shadow:0 0 .05em #ffd23f,0 0 .22em #ff9d00}}
+
 /* ================= MODERATOR ================= */
 #beamerApp{display:none}
 body.beamer #modApp{display:none}
@@ -230,7 +254,18 @@ table.scores tfoot td.warn{color:var(--warn)}
 .audiorow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .audiorow .fname{flex:1;min-width:160px;font-size:14px;color:var(--cyan2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .audiorow .fname.none{color:var(--warn)}
-aside.control{position:sticky;top:12px}
+aside.control{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.tdisp{font:900 64px/1 Montserrat,sans-serif;text-align:center;padding:10px 0 12px;color:#fff;text-shadow:0 0 14px rgba(63,240,255,.7);font-variant-numeric:tabular-nums}
+.tdisp.warn{color:#ffd0f5;text-shadow:0 0 14px #ff2fd0}
+.tdisp.done{color:var(--yellow);text-shadow:0 0 14px #ff9d00}
+.tdisp.paused{opacity:.55}
+.tset{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.tset .inp{width:84px;text-align:center;font-weight:800;font-size:18px}
+.chip{border:1px solid rgba(143,250,255,.35);background:#20166a;border-radius:999px;padding:5px 10px;cursor:pointer;font-weight:800;font-size:13px}
+.chip.on{background:#1479a8;border-color:#9ffaff}
+.tq{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.tq select{grid-column:1/-1}
+.chk{display:block;font-size:14px;margin-top:8px}
 .preview{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;border:2px solid rgba(143,250,255,.35);box-shadow:0 0 20px rgba(63,240,255,.15)}
 .nowbox{margin:12px 0;font-size:15px;line-height:1.45}
 .nowbox b{color:var(--cyan2)}
@@ -377,6 +412,28 @@ aside.control{position:sticky;top:12px}
         </div>
         <div class="warnline" id="audioWarn"></div>
       </div>
+      <div class="card-ui" id="timerCard">
+        <h2>⏱ Timer</h2>
+        <div class="tdisp" id="tDisp">1:00</div>
+        <div class="tset">
+          <input class="inp" id="tDur" value="1:00" aria-label="Timer-Dauer (Minuten:Sekunden oder Sekunden)" title="z. B. 45 oder 1:30">
+          <button class="chip" data-tp="30">0:30</button><button class="chip" data-tp="60">1:00</button>
+          <button class="chip" data-tp="90">1:30</button><button class="chip" data-tp="120">2:00</button><button class="chip" data-tp="180">3:00</button>
+        </div>
+        <div class="navbtns">
+          <button class="btn big cyan" id="tStart">▶ Start</button>
+          <button class="btn big" id="tPause">⏸ Pause</button>
+        </div>
+        <div class="tq">
+          <button class="btn" id="tAdd">+10 s</button>
+          <button class="btn" id="tReset">↺ Reset</button>
+          <button class="btn" id="tShow">🙈 Ausblenden</button>
+          <select class="inp" id="tBig"><option value="0">Anzeige: klein in der Ecke</option><option value="1">Anzeige: groß in der Mitte</option></select>
+        </div>
+        <label class="chk"><input type="checkbox" id="tBeep"> Signalton bei Ablauf</label>
+        <label class="chk"><input type="checkbox" id="tTick"> Ticken in den letzten 5 Sekunden</label>
+        <div class="hint">Dauer als Sekunden (<code>45</code>) oder Minuten:Sekunden (<code>1:30</code>). „Start“ beginnt immer von vorne, also einfach bei jeder Frage drücken. Taste <span class="kbd">T</span> = Start / Pause, auch im Beamer-Fenster.</div>
+      </div>
     </aside>
   </div>
 </div>
@@ -410,7 +467,9 @@ function initStage(host){
    <svg class="wave-bottom" viewBox="0 880 1920 200" preserveAspectRatio="none"><defs><linearGradient id="gbot" x1="0" x2="1"><stop offset="0" stop-color="#fcc52a"/><stop offset="1" stop-color="#ffe36b"/></linearGradient></defs>
    <path d="M0 1080V1066C420 1074 820 1040 1180 1000C1500 965 1720 925 1920 895V1080Z" fill="url(#gbot)"/></svg>
    <div class="q q1">?</div><div class="q q2">?</div><div class="q q3">?</div><div class="q q4">?</div>
-   <img class="logo" src="${LOGO}" alt=""><div class="site"></div></div><div class="layers"></div>`;
+   <img class="logo" src="${LOGO}" alt=""><div class="site"></div></div><div class="layers"></div>
+   <div class="tmr"><svg viewBox="0 0 200 200"><circle class="bgc" cx="100" cy="100" r="96"/><circle class="trk" cx="100" cy="100" r="88"/><circle class="arc" cx="100" cy="100" r="88"/></svg>
+   <div class="tv">0:00</div><div class="tz">ZEIT!</div></div>`;
   host.appendChild(st);
   const o={host,st,layers:st.querySelector('.layers'),key:null,json:null,layer:null};
   const fit=()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;const s=Math.min(w/W,h/H);
@@ -440,6 +499,25 @@ function renderStage(host,vm){
     if(sub==='champ')el._stop=confetti(el.querySelector('canvas'));
   }
   if(sub==='top')applyReveal(o.layer,vm);
+  updateTimerView(o,vm.timer);
+}
+/* ---------- Timer-Anzeige ---------- */
+const TC=552.92;
+function timerRemaining(t){return t.state==='running'?Math.max(0,t.endAt-Date.now()):Math.max(0,t.rem||0)}
+function fmtTime(ms){const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function updateTimerView(o,t){
+  const el=o.st.querySelector('.tmr');o.t=t;const show=!!(t&&t.show);
+  el.classList.toggle('on',show);el.classList.toggle('big',show&&!!t.big);o.st.classList.toggle('tbig',show&&!!t.big);
+  if(!show)return;
+  drawTimer(el,t);
+  if(!o.tloop){o.tloop=true;const f=()=>{if(!o.t||!o.t.show||!o.st.isConnected){o.tloop=false;return}drawTimer(el,o.t);requestAnimationFrame(f)};requestAnimationFrame(f)}
+}
+function drawTimer(el,t){
+  const r=timerRemaining(t);const done=t.state==='done'||(t.state==='running'&&r<=0);
+  const frac=Math.max(0,Math.min(1,r/Math.max(1000,t.dur*1000)));
+  const tv=el.querySelector('.tv');const txt=fmtTime(r);if(tv.textContent!==txt)tv.textContent=txt;
+  const arc=el.querySelector('.arc');arc.style.strokeDashoffset=(TC*(1-frac)).toFixed(1);arc.style.opacity=frac>.004?1:0;
+  el.classList.toggle('warn',!done&&t.state!=='idle'&&r<=10000);el.classList.toggle('done',done);el.classList.toggle('paused',t.state==='paused');
 }
 function rowHTML(x,i,showLast){
   return `<div class="row p${x.place}" style="--i:${i}"><span class="pl">${x.place}.</span><span class="em emo">${esc(x.emoji)}</span>
@@ -543,6 +621,7 @@ if(IS_BEAMER){
   document.addEventListener('keydown',e=>{
     const k=e.key;
     if(k==='f'||k==='F'){fs();return}
+    if(k==='t'||k==='T'){send({type:'timer'});return}
     if([' ','ArrowRight','PageDown','Enter','ArrowDown'].includes(k)){e.preventDefault();send({type:'nav',dir:1})}
     else if(['ArrowLeft','PageUp','Backspace','ArrowUp'].includes(k)){e.preventDefault();send({type:'nav',dir:-1})}
   });
@@ -553,14 +632,17 @@ if(IS_BEAMER){
 
 /* ======================= MODERATOR ======================= */
 const EMOJIS=['🦊','🐙','🦄','🐸','🐼','🦁','🐧','🐝','🦉','🐢','🦖','🐳','🦩','🐨','🐯','🐞','🦜','🐬','🦔','🐮','🍕','🚀','🎸','⚡','🌵','🍩','🎩','🔥'];
-function defaultSettings(){return{numRounds:4,title1:'PUB',title2:'QUIZ',line1:'SA, 14. NOVEMBER',line2:'GEMEINDESAAL EICHGRABEN',site:'www.wir-fuer-eichgraben.at',drumDelay:3,drumUntilEnd:false,champStart:0}}
-function defaultState(){return{v:1,teams:[],rounds:[],settings:defaultSettings(),pres:{screen:'start'},tbOrder:{},tbSig:null}}
+function defaultSettings(){return{numRounds:4,title1:'PUB',title2:'QUIZ',line1:'SA, 14. NOVEMBER',line2:'GEMEINDESAAL EICHGRABEN',site:'www.wir-fuer-eichgraben.at',drumDelay:3,drumUntilEnd:false,champStart:0,timerBeep:true,timerTick:true,timerBig:false}}
+function defaultState(){return{v:1,teams:[],rounds:[],settings:defaultSettings(),pres:{screen:'start'},tbOrder:{},tbSig:null,timer:defaultTimer()}}
+function defaultTimer(){return{dur:60,state:'idle',endAt:0,rem:60000,show:false}}
 function normalize(s){
   const d=defaultState();s=Object.assign(d,s||{});
   s.settings=Object.assign(defaultSettings(),s.settings||{});
   s.settings.numRounds=Math.max(1,Math.min(30,parseInt(s.settings.numRounds)||4));
   s.teams=(Array.isArray(s.teams)?s.teams:[]).filter(t=>t&&typeof t==='object').map(t=>({id:String(t.id||newId()),name:String(t.name??''),emoji:String(t.emoji??'')}));
   s.rounds=(Array.isArray(s.rounds)?s.rounds:[]).map((r,i)=>({name:String(r?.name??`Runde ${i+1}`),scores:(r&&typeof r.scores==='object'&&r.scores)||{}}));
+  s.timer=Object.assign(defaultTimer(),s.timer||{});s.timer.dur=Math.max(1,Math.min(5999,parseInt(s.timer.dur)||60));
+  if(s.timer.state==='running'&&s.timer.endAt<=Date.now()){s.timer.state='done';s.timer.rem=0}
   s.tbOrder=s.tbOrder||{};s.pres=s.pres||{screen:'start'};s.pres.suspense=false;
   ensureRounds(s);
   if(s.pres.round!=null&&s.pres.round>=s.settings.numRounds)s.pres={screen:'start'};
@@ -622,7 +704,7 @@ function standingsData(r,final){
     rest,top,all,steps};
 }
 function buildVM(){
-  const st=S.settings,p=S.pres,base={site:st.site};
+  const st=S.settings,p=S.pres,base={site:st.site,timer:{...S.timer,big:!!st.timerBig}};
   if(p.screen==='round'&&p.round<st.numRounds){const i=p.round;
     return{...base,screen:'round',key:'round|'+i+'|'+roundName(i)+'|'+st.numRounds,idx:i,n:st.numRounds,name:roundName(i)}}
   if(p.screen==='standings'&&p.round<st.numRounds){const d=standingsData(p.round,p.final);
@@ -840,6 +922,48 @@ function renderRoundSel(){const sel=$('#roundSel');const v=sel.value;
   sel.innerHTML=S.rounds.map((r,i)=>`<option value="${i}">${esc(roundName(i))}${i===S.settings.numRounds-1?' (Finale)':''}</option>`).join('');
   if(v!==''&&+v<S.rounds.length)sel.value=v;}
 
+/* ---------- Timer (Moderator) ---------- */
+let actx=null;
+function ac(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume()}catch(e){}return actx}
+function tone(f,start,len,vol=.25,type='triangle'){const a=ac();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;
+  const t=a.currentTime+start;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+len);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+len+.05)}
+const sndTick=()=>tone(1000,0,.08,.15,'square');
+const sndEnd=()=>{tone(660,0,.35,.3);tone(880,.2,.35,.3);tone(1320,.4,1.3,.32);tone(660,.4,1.3,.18)};
+function parseDur(v){v=String(v).trim().replace(/[.,]/,':');const m=v.match(/^(\d{1,2}):(\d{1,2})$/);let s;
+  if(m)s=(+m[1])*60+(+m[2]);else if(/^\d{1,4}$/.test(v))s=+v;else return null;return s>=1&&s<=5999?s:null}
+function timerStart(){ac();const d=S.timer.dur;S.timer={dur:d,state:'running',endAt:Date.now()+d*1000,rem:d*1000,show:true};save()}
+function timerPauseResume(){const t=S.timer;
+  if(t.state==='running'){t.rem=timerRemaining(t);t.state='paused'}
+  else if(t.state==='paused'){ac();t.endAt=Date.now()+t.rem;t.state='running'}
+  else return;save()}
+function timerToggle(){const st=S.timer.state;if(st==='running'||st==='paused')timerPauseResume();else timerStart()}
+function timerReset(){const t=S.timer;t.state='idle';t.rem=t.dur*1000;save()}
+function timerAdd(sec){const t=S.timer;
+  if(t.state==='running')t.endAt+=sec*1000;
+  else if(t.state==='done'){t.rem=sec*1000;t.endAt=Date.now()+t.rem;t.state='running';t.show=true}
+  else t.rem+=sec*1000;save()}
+function timerSetDur(sec){const t=S.timer;t.dur=sec;if(t.state==='idle'||t.state==='done'){t.state='idle';t.rem=sec*1000}save();updateTimerUI(true)}
+function updateTimerUI(force){
+  const t=S.timer,r=timerRemaining(t),done=t.state==='done';
+  const d=$('#tDisp');const txt=fmtTime(r);if(d.textContent!==txt)d.textContent=txt;
+  d.classList.toggle('warn',!done&&t.state!=='idle'&&r<=10000);d.classList.toggle('done',done);d.classList.toggle('paused',t.state==='paused');
+  $('#tPause').textContent=t.state==='paused'?'▶ Weiter':'⏸ Pause';$('#tPause').disabled=!(t.state==='running'||t.state==='paused');
+  $('#tShow').textContent=t.show?'🙈 Ausblenden':'👁 Einblenden';
+  $$('#timerCard .chip').forEach(c=>c.classList.toggle('on',+c.dataset.tp===t.dur));
+  if(force||document.activeElement!==$('#tDur'))$('#tDur').value=fmtTime(t.dur*1000);
+  $('#tBig').value=S.settings.timerBig?'1':'0';$('#tBeep').checked=!!S.settings.timerBeep;$('#tTick').checked=!!S.settings.timerTick;
+}
+let lastTickSec=null;
+function timerLoop(){
+  const t=S.timer;
+  if(t.state==='running'){const r=timerRemaining(t),sec=Math.ceil(r/1000);
+    if(r<=0){t.state='done';t.rem=0;lastTickSec=null;save();if(S.settings.timerBeep)sndEnd()}
+    else{if(sec!==lastTickSec&&sec<=5&&lastTickSec!==null&&S.settings.timerTick)sndTick();lastTickSec=sec}}
+  else lastTickSec=null;
+  updateTimerUI();
+}
+
 /* ---------- Init Moderator ---------- */
 if(!IS_BEAMER){
   S=load();
@@ -923,6 +1047,7 @@ if(!IS_BEAMER){
     if(e.key==='PageDown'){e.preventDefault();next();return}
     if(e.key==='PageUp'){e.preventDefault();prev();return}
     const t=e.target;if(/INPUT|TEXTAREA|SELECT/.test(t.tagName)||t.isContentEditable)return;
+    if(e.key==='t'||e.key==='T'){e.preventDefault();timerToggle();return}
     if(e.key===' '||e.key==='ArrowRight'){e.preventDefault();next()}
     else if(e.key==='ArrowLeft'){e.preventDefault();prev()}});
   // Beamer
@@ -932,12 +1057,24 @@ if(!IS_BEAMER){
     if(!beamerWin)alert('Das Beamer-Fenster wurde blockiert. Bitte Pop-ups für diese Seite erlauben.');};
   window.addEventListener('message',e=>{const d=e.data;if(!d||d.app!=='pubquiz')return;
     if(d.type==='hello'){beamerWin=e.source;lastHello=Date.now();postVM();updateBeamerStatus()}
-    if(d.type==='nav'){d.dir>0?next():prev()}});
+    if(d.type==='nav'){d.dir>0?next():prev()}
+    if(d.type==='timer')timerToggle();});
   function updateBeamerStatus(){const on=Date.now()-lastHello<4000;$('#beamerDot').classList.toggle('on',on);$('#beamerStatus').textContent=on?'Beamer verbunden':'Beamer nicht verbunden'}
   setInterval(updateBeamerStatus,1000);
   window.addEventListener('beforeunload',()=>persist());
 
-  renderRoundSel();switchTab(S.teams.length?'scores':'teams');sync();loadAudio();
+  // Timer
+  $('#tStart').onclick=timerStart;$('#tPause').onclick=timerPauseResume;$('#tReset').onclick=timerReset;$('#tAdd').onclick=()=>timerAdd(10);
+  $('#tShow').onclick=()=>{S.timer.show=!S.timer.show;save()};
+  $('#tBig').onchange=e=>{S.settings.timerBig=e.target.value==='1';save()};
+  $('#tBeep').onchange=e=>{S.settings.timerBeep=e.target.checked;save();if(e.target.checked)sndEnd()};
+  $('#tTick').onchange=e=>{S.settings.timerTick=e.target.checked;save();if(e.target.checked)sndTick()};
+  $$('#timerCard .chip').forEach(c=>c.onclick=()=>timerSetDur(+c.dataset.tp));
+  $('#tDur').addEventListener('change',e=>{const v=parseDur(e.target.value);if(v==null){toast('Ungültige Dauer. Beispiele: 45 oder 1:30');updateTimerUI(true);return}timerSetDur(v)});
+  $('#tDur').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur()}});
+  setInterval(timerLoop,100);
+
+  renderRoundSel();switchTab(S.teams.length?'scores':'teams');sync();loadAudio();updateTimerUI(true);
 }
 </script>
 </body>

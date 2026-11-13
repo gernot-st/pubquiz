@@ -19,6 +19,7 @@ Die App besteht aus einer einzigen HTML-Datei (`PubQuiz.html`), die komplett off
 - **Zwischenstand**: Titelbild → alle Plätze ab 6 auf einmal → Countdown von Platz 5 bis 1, jeweils mit Trommelwirbel. Bei Gleichstand teilen sich die Teams den Platz.
 - **Endstand**: Die Plätze 1–3 müssen eindeutig sein. Bei Gleichstand fordert die App ein Stechen, in dem die Moderation die Reihenfolge festlegt. Der Sieger wird mit Konfetti und „We are the Champions“ aufgedeckt, danach folgt die komplette Endtabelle.
 - **Steuerung**: Leertaste, →, Bild↓ oder ein Presenter schalten weiter, ←/Bild↑ zurück. Das funktioniert auch, wenn das Beamer-Fenster den Fokus hat. In der Moderationsansicht gibt es eine Live-Vorschau des Beamers.
+- **Timer** für jede Frage: Die Dauer ist frei einstellbar (z. B. `45` oder `1:30`), dazu gibt es Schnellwahl-Knöpfe. Start (beginnt immer von vorne), Pause/Weiter, +10 s, Reset, Ein- und Ausblenden. Der Timer erscheint als Neon-Ring über dem aktuellen Beamer-Bild, klein in der Ecke oder groß in der Mitte. In den letzten 10 Sekunden färbt er sich pink, bei Ablauf erscheint „ZEIT!“. Optional gibt es einen Signalton und ein Ticken in den letzten 5 Sekunden (vom Browser erzeugt, keine Datei nötig). Taste **T** = Start/Pause.
 - **Sicherung**: Der Spielstand wird automatisch im Browser gespeichert. Zusätzlich gibt es einen JSON-Backup-Export und -Import.
 
 ## Projektstruktur
